@@ -32,11 +32,11 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
         setMembershipSales(memberships || [])
       }
 
-      if (reportType === "products" || reportType === "kitchen") {
+      if (reportType === "products" || reportType === "kitchen_s") {
         const { data: items } = await supabase
           .from("sales")
           .select("member_name, items_json, payment_method, amount_paid, discount, time_of_purchase")
-          .eq("service_name", reportType === "products" ? "Product Purchase" : "Restaurant")
+          .eq("service_name", reportType === "products" ? "Product Purchase" : "Restaurant Sale")
           .eq("payment_status", "paid")
           .gte("time_of_purchase", fromDate)
           .lte("time_of_purchase", `${toDate}T23:59:59`)
@@ -54,7 +54,7 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
     return count > 1 ? "Renewal" : "New"
   }
 
-  const flatProductRows = reportType === "kitchen"
+  const flatProductRows = reportType === "kitchen_s"
     ? productSales.map((s) => {
         if (!s.items_json) return null;
         try {
@@ -136,10 +136,10 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
   }
 
   const handleProductExportXLSX = () => {
-    const heading = `${reportType === "kitchen" ? "Kitchen" : "Product"} Sales Report ${fromDate === toDate ? `for ${formattedFrom}` : `from ${formattedFrom} to ${formattedTo}`}`
+    const heading = `${reportType === "kitchen_s" ? "Kitchen" : "Product"} Sales Report ${fromDate === toDate ? `for ${formattedFrom}` : `from ${formattedFrom} to ${formattedTo}`}`
 
     const rows: any[] = flatProductRows.map((item) => (
-      reportType === "kitchen" ? [
+      reportType === "kitchen_s" ? [
         item.name,
         item.customer_name,
         item.cost_price,
@@ -163,11 +163,11 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
 
     const worksheetData = [
       [heading],
-      reportType === "kitchen"
+      reportType === "kitchen_s"
         ? ["Item(s)", "Customer", "Price", "Qty", "Tax", "Discount", "Total", "Payment"]
         : ["Product", "Customer", "Cost Price", "Selling Price", "Qty", "Tax", "Discount", "Total", "Payment"],
       ...rows,
-      reportType === "kitchen"
+      reportType === "kitchen_s"
         ? ["", "", "", "", "", "Total", totalProduct, ""]
         : ["", "", "", "", "", "", "Total", totalProduct, ""]
     ]
@@ -176,7 +176,7 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
     worksheet['!cols'] = Array(9).fill({ wch: 20 })
 
     const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, `${reportType === "kitchen" ? "Kitchen" : "Product"} Report`)
+    XLSX.utils.book_append_sheet(workbook, worksheet, `${reportType === "kitchen_s" ? "Kitchen" : "Product"} Report`)
     XLSX.writeFile(workbook, `${reportType}-sales-${fromDate}_to_${toDate}.xlsx`)
   }
 
@@ -244,17 +244,17 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
           {reportType === "kitchen" ? "Kitchen" : "Product"} Sales Report {fromDate === toDate ? `for ${formattedFrom}` : `from ${formattedFrom} to ${formattedTo}`}
         </h2>
         <Button onClick={handleProductExportXLSX}>
-          <DownloadIcon className="w-4 h-4 mr-2" /> Export {reportType === "kitchen" ? "Kitchen" : "Product"} XLSX
+          <DownloadIcon className="w-4 h-4 mr-2" /> Export {reportType === "kitchen_s" ? "Kitchen" : "Product"} XLSX
         </Button>
       </div>
       <div className="bg-white shadow rounded p-4">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left border-b">
-              <th className="py-2 font-bold">{reportType === "kitchen" ? "Item(s)" : "Product"}</th>
+              <th className="py-2 font-bold">{reportType === "kitchen_s" ? "Item(s)" : "Product"}</th>
               <th className="font-bold">Customer</th>
               <th className="font-bold">Price</th>
-              {reportType !== "kitchen" && <th className="font-bold">Selling Price</th>}
+              {reportType !== "kitchen_s" && <th className="font-bold">Selling Price</th>}
               <th className="font-bold">Qty</th>
               <th className="font-bold">Tax</th>
               <th className="font-bold">Discount</th>
@@ -268,7 +268,7 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
                 <td className="py-2">{item.name}</td>
                 <td>{item.customer_name}</td>
                 <td>{item.cost_price}</td>
-                {reportType !== "kitchen" && <td>{item.selling_price}</td>}
+                {reportType !== "kitchen_s" && <td>{item.selling_price}</td>}
                 <td>{item.quantity}</td>
                 <td>{item.tax}</td>
                 <td>{item.discount}%</td>
@@ -277,7 +277,7 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
               </tr>
             ))}
             <tr className="font-semibold">
-              <td colSpan={reportType === "kitchen" ? 6 : 7}>Total</td>
+              <td colSpan={reportType === "kitchen_s" ? 6 : 7}>Total</td>
               <td>₹{totalProduct}</td>
               <td></td>
             </tr>
