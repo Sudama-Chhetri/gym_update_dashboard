@@ -1,6 +1,6 @@
 'use client'
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
@@ -18,15 +18,16 @@ const styles = StyleSheet.create({
   },
 })
 
-const formatDate = (dateStr) =>
-  new Date(dateStr).toLocaleDateString("en-IN", {
+const formatISTDate = (dateStr, compact = false) => {
+  if (!dateStr) return "N/A"
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return "Invalid"
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: compact ? "2-digit" : "long",
     year: "numeric",
-    month: "long",
-    day: "numeric",
   })
-
-const formatCompactDate = (dateStr) =>
-  new Date(dateStr).toLocaleDateString("en-IN")
+}
 
 const formatINRCurrency = (amount) =>
   new Intl.NumberFormat("en-IN", {
@@ -35,31 +36,44 @@ const formatINRCurrency = (amount) =>
     maximumFractionDigits: 0,
   }).format(amount)
 
-
 function MembershipInvoicePDF({ invoiceData }) {
-  const formattedDate = new Date(invoiceData.date).toLocaleString()
+  const {
+    invoice_id,
+    date,
+    customerName,
+    customerPhone,
+    joinDate,
+    plan,
+    startDate,
+    endDate,
+    category,
+    paymentMethod,
+    amountPaid,
+    showJoiningFee,
+  } = invoiceData
+
+  const membershipPrice = amountPaid - (showJoiningFee ? 5000 : 0)
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
-          <Text style={{ fontSize: 16, marginBottom: 10 }}>Tenzing Gym - Membership Invoice</Text>
-          <Text><Text style={styles.label}>Invoice ID:</Text> {invoiceData.invoice_id}</Text>
-          <Text><Text style={styles.label}>Date:</Text> {formattedDate}</Text>
-          <Text><Text style={styles.label}>Customer Name:</Text> {invoiceData.customerName}</Text>
-          <Text><Text style={styles.label}>Contact:</Text> {invoiceData.customerPhone}</Text>
-          <Text><Text style={styles.label}>Join Date:</Text> {invoiceData.joinDate}</Text>
-          <Text><Text style={styles.label}>Membership Plan:</Text> {invoiceData.membershipPlan}</Text>
-          <Text><Text style={styles.label}>Membership Start:</Text> {new Date(invoiceData.membershipStart).toLocaleDateString("en-IN")}</Text>
-          <Text><Text style={styles.label}>Membership End:</Text> {new Date(invoiceData.membershipEnd).toLocaleDateString("en-IN")}</Text>
-          <Text><Text style={styles.label}>Category:</Text> {invoiceData.category?.charAt(0).toUpperCase() + invoiceData.category?.slice(1)}</Text>
-          <Text><Text style={styles.label}>Payment Method:</Text> {invoiceData.paymentMethod}</Text>
-          <Text><Text style={styles.label}>Membership Price:</Text> ₹{invoiceData.amountPaid - (invoiceData.joiningFee || 0)}</Text>
-          {invoiceData.joiningFee > 0 && (
-            <Text><Text style={styles.label}>Joining Fee:</Text> ₹{invoiceData.joiningFee}</Text>
+          <Text style={{ fontSize: 16, marginBottom: 10 }}>Tenzin&apos;s Gym - Membership Invoice</Text>
+          <Text><Text style={styles.label}>Invoice ID:</Text> {invoice_id}</Text>
+          <Text><Text style={styles.label}>Date:</Text> {formatISTDate(date)}</Text>
+          <Text><Text style={styles.label}>Customer Name:</Text> {customerName}</Text>
+          <Text><Text style={styles.label}>Contact:</Text> {customerPhone}</Text>
+          <Text><Text style={styles.label}>Join Date:</Text> {formatISTDate(joinDate)}</Text>
+          <Text><Text style={styles.label}>Membership Plan:</Text> {plan}</Text>
+          <Text><Text style={styles.label}>Membership Start:</Text> {formatISTDate(startDate, true)}</Text>
+          <Text><Text style={styles.label}>Membership End:</Text> {formatISTDate(endDate, true)}</Text>
+          <Text><Text style={styles.label}>Category:</Text> {category?.charAt(0).toUpperCase() + category?.slice(1)}</Text>
+          <Text><Text style={styles.label}>Payment Method:</Text> {paymentMethod}</Text>
+          <Text><Text style={styles.label}>Membership Price:</Text> ₹{membershipPrice}</Text>
+          {showJoiningFee && (
+            <Text><Text style={styles.label}>Joining Fee:</Text> ₹5000</Text>
           )}
-          <Text><Text style={styles.label}>Total Paid:</Text> ₹{invoiceData.amountPaid}</Text>
-
+          <Text><Text style={styles.label}>Total Paid:</Text> ₹{amountPaid}</Text>
         </View>
       </Page>
     </Document>
@@ -74,21 +88,18 @@ export default function MembershipInvoiceDrawer({ open, onClose, invoiceData }) 
     customerName,
     customerPhone,
     joinDate,
-    membershipPlan,
+    plan,
     paymentMethod,
     amountPaid,
     date,
-    membershipStart,
-    membershipEnd,
+    startDate,
+    endDate,
     category,
+    showJoiningFee = false,
   } = invoiceData
 
-  const formattedDate = new Date(date).toLocaleString()
-  const formattedJoinDate = new Date(joinDate).toLocaleDateString("en-IN", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-})
+  const joiningFee = showJoiningFee ? 5000 : 0
+  const membershipPrice = Math.max(0, amountPaid - joiningFee)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -99,23 +110,22 @@ export default function MembershipInvoiceDrawer({ open, onClose, invoiceData }) 
 
         <div className="bg-white p-4 text-sm text-black">
           <h2 className="text-lg font-bold mb-2 text-center">Tenzin&apos;s Gym</h2>
-          <p className="text-center text-muted-foreground mb-4">{formatDate(date)}</p>
+          <p className="text-center text-muted-foreground mb-4">{formatISTDate(date)}</p>
 
           <p><strong>Invoice ID:</strong> {invoice_id}</p>
           <p><strong>Customer Name:</strong> {customerName}</p>
           <p><strong>Contact:</strong> {customerPhone}</p>
-          <p><strong>Join Date:</strong> {formatDate(joinDate)}</p>
-          <p><strong>Membership Plan:</strong> {membershipPlan}</p>
-          <p><strong>Membership Start:</strong> {formatCompactDate(membershipStart)}</p>
-          <p><strong>Membership End:</strong> {formatCompactDate(membershipEnd)}</p>
+          <p><strong>Join Date:</strong> {formatISTDate(joinDate)}</p>
+          <p><strong>Membership Plan:</strong> {plan}</p>
+          <p><strong>Membership Start:</strong> {formatISTDate(startDate, true)}</p>
+          <p><strong>Membership End:</strong> {formatISTDate(endDate, true)}</p>
           <p><strong>Category:</strong> {category?.charAt(0).toUpperCase() + category?.slice(1)}</p>
           <p><strong>Payment Method:</strong> {paymentMethod}</p>
 
-          {invoiceData.joiningFee > 0 && (
-            <p><strong>Joining Fee:</strong> {formatINRCurrency(invoiceData.joiningFee)}</p>
+          {showJoiningFee && (
+            <p><strong>Joining Fee:</strong> {formatINRCurrency(joiningFee)}</p>
           )}
-          <p><strong>Membership Price:</strong> {formatINRCurrency(amountPaid - (invoiceData.joiningFee || 0))}</p>
-
+          <p><strong>Membership Price:</strong> {formatINRCurrency(membershipPrice)}</p>
           <p className="mt-2 border-t pt-2"><strong>Total Amount Paid:</strong> {formatINRCurrency(amountPaid)}</p>
         </div>
 

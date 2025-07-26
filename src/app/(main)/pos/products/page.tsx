@@ -102,17 +102,15 @@ export default function ProductPOSPage() {
     invoice_id: invoiceId,
     service_name: "Product Purchase",
     quantity: totalQuantity,
-    revenue: totalRevenue,
-    expenditure: totalExpenditure,
-    profit: totalProfit,
     member_name: customerName,
     member_phone: customerPhone,
     payment_method: paymentMethod,
-    payment_status: paymentMethod === 'Due' ? 'unpaid':'paid',
+    payment_status: paymentMethod === 'Due' ? 'unpaid' : 'paid',
     time_of_purchase: new Date().toISOString(),
     items_json: cart,
+    amount_paid: discountedTotal,
+    discount: parseFloat(discount),
   }])
-
 
     await Promise.all(
       cart.map((item) =>

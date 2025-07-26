@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
@@ -7,6 +7,7 @@ import toast from "react-hot-toast"
 import MembershipInvoiceDrawer from "@/components/invoices/MembershipInvoiceDrawer"
 
 const JOINING_FEE = 5000;
+
 export default function MembershipPOS() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -19,9 +20,9 @@ export default function MembershipPOS() {
   const [invoiceOpen, setInvoiceOpen] = useState(false)
   const [invoiceData, setInvoiceData] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState("cash")
-  const [categoryOptions, setCategoryOptions] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [filteredPlans, setFilteredPlans] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [filteredPlans, setFilteredPlans] = useState([])
 
   const searchParams = useSearchParams()
   const memberId = searchParams.get("member_id")
@@ -29,12 +30,11 @@ export default function MembershipPOS() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: plans } = await supabase.from("membership").select("*");
-      if (plans){
-        setMembershipPlans(plans);
-
-        const uniqueCategories = [...new Set(plans.map(p => p.category))];
-        setCategoryOptions(uniqueCategories);
+      const { data: plans } = await supabase.from("membership").select("*")
+      if (plans) {
+        setMembershipPlans(plans)
+        const uniqueCategories = [...new Set(plans.map(p => p.category))]
+        setCategoryOptions(uniqueCategories)
       }
 
       if (memberId) {
@@ -54,6 +54,7 @@ export default function MembershipPOS() {
         }
       }
     }
+
     fetchData()
   }, [memberId])
 
@@ -62,6 +63,7 @@ export default function MembershipPOS() {
       toast.error("Please fill in all required fields")
       return
     }
+
     setIsLoading(true)
 
     try {
@@ -77,8 +79,13 @@ export default function MembershipPOS() {
       }
 
       const invoiceId = `IN${String((Math.random() * 1000000).toFixed(0)).padStart(6, "0")}`
+      const isNewMember = !existingMember
+      const joiningFee = isNewMember ? JOINING_FEE : 0
+      const membershipPrice = selectedPlan?.pricing || 0
+      const amountPaid = membershipPrice + joiningFee
 
       let memberIdToUse = memberId
+
       if (existingMember) {
         await supabase.from("members").update({
           membership_start: today.toISOString(),
@@ -89,6 +96,7 @@ export default function MembershipPOS() {
         const { data: allMembers } = await supabase.from("members").select("member_id")
         const newId = `M${String((allMembers?.length || 0) + 1).padStart(3, "0")}`
         memberIdToUse = newId
+
         await supabase.from("members").insert([{
           member_id: newId,
           name,
@@ -102,46 +110,50 @@ export default function MembershipPOS() {
         }])
       }
 
-      const { error, status } = await supabase.from("sales").insert([{
-      invoice_id: invoiceId,
-      service_name: "Membership",
-      expenditure: 0,
-      revenue: selectedPlan.pricing + (!existingMember ? JOINING_FEE: 0),
-      quantity: 1,
-      time_of_purchase: today.toISOString(),
-      payment_method: paymentMethod,
-      member_name: name,
-      member_phone: phone,
-      duration: `${selectedPlan.duration} months`
-    }])
+      const { error } = await supabase.from("sales").insert([{
+        invoice_id: invoiceId,
+        service_name: "Membership",
+        member_name: name,
+        member_phone: phone,
+        membership_type: `${selectedPlan.duration} months`,
+        membership_start_date: today.toISOString(),
+        membership_end_date: endDate.toISOString(),
+        amount_paid: amountPaid,
+        category: selectedPlan.category,
+        quantity: 1,
+        payment_method: paymentMethod,
+        payment_status: "paid",
+        time_of_purchase: today.toISOString(),
+      }])
 
-    if (error) {
-      console.error("❌ Sales Insert Error:", error.message)
-    } else {
-      console.log("✅ Sales insert successful", status)
-    }
+      if (error) {
+        console.error("❌ Sales Insert Error:", error.message)
+        toast.error("Sales entry failed.")
+        return
+      }
 
-     const formatDuration = (months) => `${months} month${months > 1 ? "s" : ""}`;
-
-    setInvoiceData({
-      invoice_id: invoiceId,
-      customerName: name,
-      customerPhone: phone,
-      joinDate: today.toISOString(),
-      membershipPlan: formatDuration(selectedPlan.duration),
-      paymentMethod: paymentMethod,
-      amountPaid: selectedPlan.pricing + (!existingMember ? JOINING_FEE : 0),
-      date: today.toISOString(),
-      joiningFee: !existingMember ? JOINING_FEE : 0,
-      membershipStart: today.toISOString(),
-      membershipEnd: endDate.toISOString(),
-      category: selectedPlan.category,
-    })
+      setInvoiceData({
+        invoice_id: invoiceId,
+        customerName: name,
+        customerPhone: phone,
+        joinDate: existingMember?.join_date || today.toISOString(),
+        plan: `${selectedPlan.duration} month${selectedPlan.duration > 1 ? "s" : ""}`,
+        paymentMethod,
+        amountPaid,
+        date: today.toISOString(),
+        showJoiningFee: isNewMember,
+        joiningFee,
+        startDate: today.toISOString(),
+        endDate: endDate.toISOString(),
+        category: selectedPlan.category,
+        isMembership: true,
+      })
 
 
       setInvoiceOpen(true)
-
       toast.success("Membership processed successfully")
+
+      // Reset form
       setName("")
       setEmail("")
       setPhone("")
@@ -149,7 +161,7 @@ export default function MembershipPOS() {
       setSelectedPlan(null)
       setJoinDate("")
     } catch (err) {
-      console.error("Error:", err)
+      console.error("❌ Unexpected Error:", err)
       toast.error("Something went wrong")
     } finally {
       setIsLoading(false)
@@ -159,6 +171,7 @@ export default function MembershipPOS() {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-4">Sell Membership</h2>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="text" placeholder="Customer Name" value={name} onChange={(e) => setName(e.target.value)} className="border rounded p-2 w-full" />
         <input type="tel" placeholder="Phone Number" value={phone} onChange={(e) => /^\d*$/.test(e.target.value) && setPhone(e.target.value)} className="border rounded p-2 w-full" />
@@ -171,23 +184,24 @@ export default function MembershipPOS() {
       </div>
 
       <div className="mt-6">
-      <label className="block font-medium mb-1">Select Category:</label>
-      <select
-        value={selectedCategory}
-        onChange={(e) => {
-          const selected = e.target.value;
-          setSelectedCategory(selected);
-          const filtered = membershipPlans.filter(p => p.category === selected);
-          setFilteredPlans(filtered);
-          setSelectedPlan(null); // clear selected plan on category switch
-        }}
-        className="border px-3 py-2 rounded w-full md:w-1/2">
-        <option value="">-- Select Category --</option>
-        {categoryOptions.map((cat) => (
-          <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-        ))}
-      </select>
-    </div>
+        <label className="block font-medium mb-1">Select Category:</label>
+        <select
+          value={selectedCategory}
+          onChange={(e) => {
+            const selected = e.target.value
+            setSelectedCategory(selected)
+            const filtered = membershipPlans.filter(p => p.category === selected)
+            setFilteredPlans(filtered)
+            setSelectedPlan(null)
+          }}
+          className="border px-3 py-2 rounded w-full md:w-1/2"
+        >
+          <option value="">-- Select Category --</option>
+          {categoryOptions.map((cat) => (
+            <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="mt-6">
         <h3 className="font-medium mb-2">Choose a Plan:</h3>
@@ -198,7 +212,7 @@ export default function MembershipPOS() {
               onClick={() => setSelectedPlan(plan)}
               className={`border rounded p-3 transition-colors duration-150 hover:bg-blue-50 hover:border-blue-400 ${selectedPlan?.id === plan.id ? "border-blue-500 bg-blue-100" : ""}`}
             >
-              {plan.duration} Months - ₹{plan.pricing}
+              {plan.duration} Months – ₹{plan.pricing}
             </button>
           ))}
         </div>
@@ -224,7 +238,11 @@ export default function MembershipPOS() {
             ? selectedPlan.pricing + (!existingMember ? JOINING_FEE : 0)
             : 0}
         </div>
-        <button onClick={handleSubmit} disabled={isLoading} className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+        <button
+          onClick={handleSubmit}
+          disabled={isLoading}
+          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+        >
           {isLoading ? "Processing..." : "Generate Invoice"}
         </button>
       </div>

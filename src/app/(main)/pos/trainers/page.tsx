@@ -100,13 +100,9 @@ export default function TrainerPOSPage() {
   })
   .eq('member_id', selectedMember.member_id)
 
-  await supabase.from("sales").insert({
+    await supabase.from("sales").insert({
     invoice_id: invoiceId,
     service_name: "Trainer Assignment",
-    revenue: trainerCost,
-    expenditure: 0,
-    profit: trainerCost,
-    quantity: 1,
     payment_method: paymentMethod,
     member_name: selectedMember.name,
     member_phone: selectedMember.phone,
@@ -114,7 +110,7 @@ export default function TrainerPOSPage() {
     assign_start: startDate.toISOString(),
     assign_end: endDate.toISOString(),
     time_of_purchase: new Date().toISOString(),
-    duration: 1,
+    amount_paid: trainerCost,
   })
 
   setInvoiceData({

@@ -17,6 +17,8 @@ export default function SalesPage() {
   const [payInvoiceId, setPayInvoiceId] = useState(null)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("Cash")
   const [currentPage, setCurrentPage] = useState(1)
+  const [serviceFilter, setServiceFilter] = useState("All")
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("All")
   const itemsPerPage = 8
 
   useEffect(() => {
@@ -35,42 +37,61 @@ export default function SalesPage() {
     const common = {
       invoice_id: sale.invoice_id,
       paymentMethod: sale.payment_method || "-",
-      date: new Date(sale.time_of_purchase).toLocaleString(),
-    }
+      date: new Date(sale.time_of_purchase).toLocaleString("en-IN", {
+         day: "2-digit",
+        month: "short",
+        year: "numeric",
+    })}
 
     switch (sale.service_name) {
       case "Membership":
-        setSelectedInvoice({
-          ...common,
-          customerName: sale.member_name,
-          customerPhone: sale.member_phone,
-          amountPaid: sale.revenue,
-          joinDate: sale.time_of_purchase,
-          plan: sale.duration,
-          isMembership: true,
-        })
-        break
+      const toDate = (str) => new Date(str).toISOString().split("T")[0];
+      const isNewMember = toDate(sale.time_of_purchase) === toDate(sale.membership_start_date);
+
+      setSelectedInvoice({
+        ...common,
+        customerName: sale.member_name,
+        customerPhone: sale.member_phone,
+        category: sale.category,
+        plan: sale.membership_type,
+        startDate: sale.membership_start_date,
+        endDate: sale.membership_end_date,
+        amountPaid: sale.amount_paid,
+        showJoiningFee: isNewMember,
+        joinDate: sale.time_of_purchase,
+        isMembership: true,
+      });
+      break;
 
       case "Trainer Assignment":
-        setSelectedInvoice({
-          ...common,
-          customerName: sale.member_name,
-          customerPhone: sale.member_phone,
-          trainerName: sale.trainer_name,
-          assignStart: sale.assign_start,
-          assignEnd: sale.assign_end,
-          amountPaid: sale.revenue,
-          isTrainer: true,
-        })
-        break
+      setSelectedInvoice({
+        ...common,
+        customerName: sale.member_name,
+        customerPhone: sale.member_phone,
+        trainerName: sale.trainer_name,
+        assignStart: new Date(sale.assign_start).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        assignEnd: new Date(sale.assign_end).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        paymentMethod: sale.payment_method || "-",
+        total: sale.amount_paid,
+        isTrainer: true,
+      });
+      break;
 
       case "Restaurant Sale":
         setSelectedInvoice({
           ...common,
           items: sale.items_json || [],
-          total: sale.revenue + (sale.discount || 0),
+          total: sale.amount_paid + (sale.discount || 0),
           discount: sale.discount || 0,
-          discountedTotal: sale.revenue,
+          discountedTotal: sale.amount_paid,
           customerName: sale.member_name,
           customerPhone: sale.member_phone,
           isRestaurant: true,
@@ -82,9 +103,9 @@ export default function SalesPage() {
         setSelectedInvoice({
           ...common,
           items: sale.items_json || [],
-          total: sale.revenue + (sale.discount || 0),
+          total: sale.amount_paid + (sale.discount || 0),
           discount: sale.discount || 0,
-          discountedTotal: sale.revenue,
+          discountedTotal: sale.amount_paid,
           customerName: sale.member_name,
           customerPhone: sale.member_phone,
           isProduct: true,
@@ -121,13 +142,38 @@ export default function SalesPage() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Sales</h2>
-       <Input
+     <div className="flex flex-wrap items-center gap-4 mb-4">
+      <Input
         placeholder="Search by Invoice ID"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 max-w-xs"
+        className="max-w-xs"
       />
+
+      <select
+        value={serviceFilter}
+        onChange={(e) => setServiceFilter(e.target.value)}
+        className="border px-3 py-2 rounded text-sm"
+      >
+        <option value="All">All Services</option>
+        <option value="Membership">Membership</option>
+        <option value="Trainer Assignment">Trainer Assignment</option>
+        <option value="Restaurant Sale">Restaurant Sale</option>
+        <option value="Product Purchase">Product Purchase</option>
+      </select>
+
+      <select
+        value={paymentStatusFilter}
+        onChange={(e) => setPaymentStatusFilter(e.target.value)}
+        className="border px-3 py-2 rounded text-sm"
+      >
+        <option value="All">All Status</option>
+        <option value="paid">Paid</option>
+        <option value="unpaid">Unpaid</option>
+      </select>
+    </div>
+
+
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto border">
           <thead>
@@ -143,7 +189,11 @@ export default function SalesPage() {
           </thead>
           <tbody>
             {sales
-              .filter((s) => s.invoice_id.toLowerCase().includes(search.toLowerCase()))
+              .filter((s) =>
+              s.invoice_id.toLowerCase().includes(search.toLowerCase()) &&
+              (serviceFilter === "All" || s.service_name === serviceFilter) &&
+              (paymentStatusFilter === "All" || s.payment_status === paymentStatusFilter)
+            )
               .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
               .map((sale) => (
                 <tr key={sale.invoice_id} className="text-sm">
@@ -163,12 +213,13 @@ export default function SalesPage() {
                     {sale.payment_status === "unpaid" ? "Unpaid" : "Paid"}
                   </td>
                   <td className="p-2 border">
-                    {new Date(sale.time_of_purchase).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </td>
+                  {new Date(sale.time_of_purchase).toLocaleDateString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </td>
 
                   <td className="p-2 border space-x-2">
                     <Button onClick={() => handleViewInvoice(sale)}>View</Button>

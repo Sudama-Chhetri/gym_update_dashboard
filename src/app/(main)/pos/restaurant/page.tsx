@@ -75,24 +75,26 @@ export default function RestaurantPOSPage() {
     }
 
     const invoiceId = `IN${Date.now().toString().slice(-6)}`
-    const date = format(new Date(), "dd MMM yyyy, hh:mm a")
-    
+    const istNow = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    const isoIST = new Date(istNow).toISOString()
+    const displayDate = format(new Date(istNow), "dd MMM yyyy")
+
     const totalQuantity = cart.reduce((acc, i) => acc + i.quantity, 0)
 
     await supabase.from("sales").insert({
-    invoice_id: invoiceId,
-    service_name: "Restaurant Sale",
-    quantity: totalQuantity,
-    revenue: total,
-    expenditure: 0,
-    profit: total,
-    member_name: customerName,
-    member_phone: customerPhone,
-    payment_method: paymentMethod,
-    payment_status: paymentMethod === 'Due' ? 'unpaid':'paid',
-    time_of_purchase: new Date().toISOString(),
-    items_json: cart, 
-  })
+      invoice_id: invoiceId,
+      service_name: "Restaurant Sale",
+      quantity: totalQuantity,
+      amount_paid: parseFloat(discountedTotal.toFixed(2)),
+      member_name: customerName,
+      member_phone: customerPhone,
+      payment_method: paymentMethod,
+      payment_status: paymentMethod === 'Due' ? 'unpaid' : 'paid',
+      time_of_purchase: isoIST,
+      items_json: cart,
+      discount: parseFloat(discount),
+      category: "restaurant"
+    })
 
     setInvoiceData({
       invoice_id: invoiceId,
@@ -103,8 +105,9 @@ export default function RestaurantPOSPage() {
       customerName,
       customerPhone,
       paymentMethod,
-      date,
+      date: displayDate
     })
+
     setDrawerOpen(true)
     setCart([])
   }
