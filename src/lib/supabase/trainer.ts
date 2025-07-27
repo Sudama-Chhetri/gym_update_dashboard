@@ -1,4 +1,3 @@
-// lib/supabase/trainer.ts
 import { supabase } from '@/lib/supabase/supabaseClient';
 
 export async function getTrainers() {
@@ -38,4 +37,18 @@ export async function deleteTrainer(trainer_id) {
   if (error) {
     console.error('Error deleting trainer:', error);
   }
+}
+
+export async function getMembersByTrainer(trainerId: string) {
+  const { data, error } = await supabase
+    .from("members")
+    .select("name")
+    .eq("trainer_assigned", trainerId)
+
+  if (error) {
+    console.error("Error fetching members for trainer:", error)
+    return []
+  }
+
+  return data
 }

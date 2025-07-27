@@ -10,6 +10,7 @@ export default function MembersPage() {
   const [members, setMembers] = useState([])
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [trainerStatusFilter, setTrainerStatusFilter] = useState("all")
   const [editMember, setEditMember] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const router = useRouter()
@@ -42,9 +43,16 @@ export default function MembersPage() {
           newStatus = daysLeft <= 14 ? "expiring soon" : "active"
         }
 
+        let trainerStatus = "unassigned"
+        if (member.trainer_assign_end_date) {
+          const trainerEnd = new Date(member.trainer_assign_end_date)
+          trainerStatus = isAfter(trainerEnd, today) ? "active" : "expired"
+        }
+
         const updatedMember = {
           ...member,
           membership_status: newStatus,
+          trainer_status: trainerStatus,
           trainer_name: trainerMap[member.trainer_assigned] || "-"
         }
 
@@ -72,9 +80,14 @@ export default function MembersPage() {
       member.name.toLowerCase().includes(search.toLowerCase()) ||
       member.member_id.toLowerCase().includes(search.toLowerCase())
 
-    if (statusFilter !== "all" && member.membership_status !== statusFilter) return false
+    const matchesStatus =
+      statusFilter === "all" || member.membership_status === statusFilter
 
-    return matchesSearch
+    const matchesTrainerStatus =
+      trainerStatusFilter === "all" ||
+      member.trainer_status === trainerStatusFilter
+
+    return matchesSearch && matchesStatus && matchesTrainerStatus
   })
 
   const formatRemaining = (end: string) => {
@@ -91,36 +104,44 @@ export default function MembersPage() {
   }
 
   const getTrainerDaysLeft = (start: string, end: string) => {
-  const today = new Date()
-  const endDate = new Date(end)
+    const today = new Date()
+    const endDate = new Date(end)
 
-  if (!isAfter(endDate, today)) return "Expired"
+    if (!isAfter(endDate, today)) return "Expired"
 
-  const daysLeft = differenceInDays(endDate, today)
-  return `${daysLeft} day${daysLeft > 1 ? "s" : ""} left`
-}
+    const daysLeft = differenceInDays(endDate, today)
+    return `${daysLeft} day${daysLeft > 1 ? "s" : ""} left`
+  }
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold">Members</h1>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <input
           type="text"
           placeholder="Search by name or ID"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border px-3 py-2 rounded w-full sm:w-1/2"
+          className="border px-3 py-2 rounded w-full"
         />
-
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border px-3 py-2 rounded w-full sm:w-40"
+          className="border px-3 py-2 rounded w-full"
         >
-          <option value="all">All Status</option>
+          <option value="all">Memberships</option>
           <option value="active">Active</option>
           <option value="expiring soon">Expiring Soon</option>
           <option value="expired">Expired</option>
+        </select>
+        <select
+          value={trainerStatusFilter}
+          onChange={(e) => setTrainerStatusFilter(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+        >
+          <option value="all">Trainerships</option>
+          <option value="active">Trainer Active</option>
+          <option value="expired">Trainer Expired</option>
         </select>
       </div>
 
@@ -131,6 +152,8 @@ export default function MembersPage() {
           const cardColor =
             member.membership_status === "expired"
               ? "bg-red-100 border-red-400"
+              : member.trainer_status === "expired"
+              ? "bg-pink-100 border-pink-400"
               : member.membership_status === "expiring soon"
               ? "bg-yellow-100 border-yellow-400"
               : ""

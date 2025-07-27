@@ -1,4 +1,3 @@
-// app/(main)/trainers/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import TrainerCard from '@/components/trainers/TrainerCard';
 import TrainerDrawer from '@/components/trainers/TrainerDrawer';
-import { getTrainers, deleteTrainer } from '@/lib/supabase/trainer';
+import { getTrainers, deleteTrainer, getMembersByTrainer } from '@/lib/supabase/trainer';
 import { Input } from '@/components/ui/input';
 
 export default function TrainersPage() {
@@ -14,6 +13,10 @@ export default function TrainersPage() {
   const [openDrawer, setOpenDrawer] = useState(false);
   const [editData, setEditData] = useState(null);
   const [search, setSearch] = useState('');
+
+  const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [assignedMembers, setAssignedMembers] = useState([]);
+  const [showMemberPopup, setShowMemberPopup] = useState(false);
 
   const fetchTrainers = async () => {
     const data = await getTrainers();
@@ -27,6 +30,13 @@ export default function TrainersPage() {
   const filteredTrainers = trainers.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleViewMembers = async (trainer) => {
+    const members = await getMembersByTrainer(trainer.trainer_id);
+    setSelectedTrainer(trainer);
+    setAssignedMembers(members);
+    setShowMemberPopup(true);
+  };
 
   return (
     <div className="p-4">
@@ -55,6 +65,7 @@ export default function TrainersPage() {
               await deleteTrainer(id);
               fetchTrainers();
             }}
+            onViewMembers={handleViewMembers} // 👈 added
           />
         ))}
       </div>
@@ -65,6 +76,32 @@ export default function TrainersPage() {
         onSave={fetchTrainers}
         editData={editData}
       />
+
+      {/* 👇 Assigned Members Popup */}
+      {showMemberPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-md w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">
+              Members Assigned to {selectedTrainer?.name}
+            </h2>
+            {assignedMembers.length === 0 ? (
+              <p>No members assigned.</p>
+            ) : (
+              <ul className="space-y-1 list-disc list-inside">
+              {assignedMembers.map((member, idx) => (
+                <li key={idx} className="text-sm">{member.name}</li>
+              ))}
+            </ul>
+            )}
+            <Button
+              className="mt-4"
+              onClick={() => setShowMemberPopup(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

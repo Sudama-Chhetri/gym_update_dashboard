@@ -84,7 +84,7 @@ export default function MembershipPOS() {
       const membershipPrice = selectedPlan?.pricing || 0
       const amountPaid = membershipPrice + joiningFee
 
-      let memberIdToUse = memberId
+      //let memberIdToUse = memberId
 
       if (existingMember) {
         await supabase.from("members").update({
@@ -95,7 +95,7 @@ export default function MembershipPOS() {
       } else {
         const { data: allMembers } = await supabase.from("members").select("member_id")
         const newId = `M${String((allMembers?.length || 0) + 1).padStart(3, "0")}`
-        memberIdToUse = newId
+        //memberIdToUse = newId
 
         await supabase.from("members").insert([{
           member_id: newId,
@@ -131,6 +131,7 @@ export default function MembershipPOS() {
         toast.error("Sales entry failed.")
         return
       }
+      //const isRenewal = !!existingMember?.membership_start && !!existingMember?.membership_end
 
       setInvoiceData({
         invoice_id: invoiceId,
@@ -147,6 +148,7 @@ export default function MembershipPOS() {
         endDate: endDate.toISOString(),
         category: selectedPlan.category,
         isMembership: true,
+        isRenewal: !isNewMember,
       })
 
 

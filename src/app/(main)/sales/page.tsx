@@ -45,8 +45,8 @@ export default function SalesPage() {
 
     switch (sale.service_name) {
       case "Membership":
-      const toDate = (str) => new Date(str).toISOString().split("T")[0];
-      const isNewMember = toDate(sale.time_of_purchase) === toDate(sale.membership_start_date);
+      const toDate = (str) => new Date(str).toISOString().split("T")[0]
+      const isRenewal = toDate(sale.time_of_purchase) !== toDate(sale.membership_start_date)
 
       setSelectedInvoice({
         ...common,
@@ -57,10 +57,10 @@ export default function SalesPage() {
         startDate: sale.membership_start_date,
         endDate: sale.membership_end_date,
         amountPaid: sale.amount_paid,
-        showJoiningFee: isNewMember,
-        joinDate: sale.time_of_purchase,
+        joinDate: sale.membership_start_date,
         isMembership: true,
-      });
+        showJoiningFee: !isRenewal,
+      })
       break;
 
       case "Trainer Assignment":
