@@ -43,7 +43,7 @@ export default function ReportsPage() {
           <span className="text-sm text-muted-foreground">Report Type</span>
           <select
             value={reportType}
-            onChange={(e) => setReportType(e.target.value as any)}
+            onChange={(e) => setReportType(e.target.value as 'gym' | 'kitchen' | 'membership' | 'products' | 'kitchen_s')}
             className="border p-2 rounded"
           >
             <option value="gym">Gym Expenses</option>

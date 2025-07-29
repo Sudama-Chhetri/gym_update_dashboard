@@ -7,11 +7,46 @@ import { DownloadIcon } from "lucide-react"
 import * as XLSX from "xlsx"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
+import { KitchenItem, ProductItem } from "@/types"
+
+interface MembershipSale {
+  member_name: string;
+  member_phone: string;
+  membership_start_date: string;
+  membership_end_date: string;
+  membership_type: string;
+  amount_paid: number;
+  payment_method: string;
+  time_of_purchase: string;
+  category: string;
+}
+
+interface SaleItem {
+  member_name: string;
+  items_json: string | KitchenItem[] | ProductItem[];
+  payment_method: string;
+  amount_paid: number;
+  discount: number;
+  time_of_purchase: string;
+}
+
+interface FlatProductRow {
+  name: string;
+  customer_name: string;
+  cost_price: string;
+  quantity: string;
+  tax: string;
+  discount: number;
+  amount: number;
+  payment_method: string;
+  selling_price?: string; // Optional for kitchen items
+}
+
 export default function SalesReport({ fromDate, toDate, reportType }: { fromDate: string, toDate: string, reportType: string }) {
   const supabase = createClientComponentClient()
 
-  const [membershipSales, setMembershipSales] = useState([])
-  const [productSales, setProductSales] = useState<any[]>([])
+  const [membershipSales, setMembershipSales] = useState<MembershipSale[]>([])
+  const [productSales, setProductSales] = useState<SaleItem[]>([])
   const [currentPage, setCurrentPage] = useState(1)
 
   const ITEMS_PER_PAGE = 5
@@ -33,7 +68,7 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
       }
 
       if (reportType === "products" || reportType === "kitchen_s") {
-        const { data: items } = await supabase
+        const { data: items }: { data: SaleItem[] | null } = await supabase
           .from("sales")
           .select("member_name, items_json, payment_method, amount_paid, discount, time_of_purchase")
           .eq("service_name", reportType === "products" ? "Product Purchase" : "Restaurant Sale")
@@ -58,15 +93,15 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
     ? productSales.map((s) => {
         if (!s.items_json) return null;
         try {
-          const items = typeof s.items_json === "string" ? JSON.parse(s.items_json) : s.items_json;
-          const names = items.map((item: any) => item.name).join(", ");
-          const prices = items.map((item: any) => `₹${item.cost}`).join(" + ");
-          const quantities = items.map((item: any) => item.quantity).join(" + ");
-          const taxes = items.map((item: any) => `${item.tax}%`).join(" + ");
+          const items = typeof s.items_json === "string" ? JSON.parse(s.items_json) as KitchenItem[] : s.items_json as KitchenItem[];
+          const names = items.map((item: KitchenItem) => item.name).join(", ");
+          const quantities = items.map((item: KitchenItem) => item.quantity).join(" + ");
+          const taxes = items.map((item: KitchenItem) => `${item.tax}%`).join(" + ");
+          const costPrices = items.map((item: KitchenItem) => `₹${item.cost}`).join(" + ");
           return {
             name: names,
             customer_name: s.member_name || "-",
-            cost_price: prices,
+            cost_price: costPrices,
             quantity: quantities,
             tax: taxes,
             discount: s.discount ?? "-",
@@ -77,16 +112,16 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
           console.error("Error parsing kitchen items_json:", s.items_json, e);
           return null;
         }
-      }).filter(Boolean)
+      }).filter(Boolean) as FlatProductRow[]
     : productSales.map((s) => {
         if (!s.items_json) return null;
         try {
-          const items = typeof s.items_json === "string" ? JSON.parse(s.items_json) : s.items_json;
-          const names = items.map((item: any) => item.name).join(", ");
-          const costPrices = items.map((item: any) => item.cost_price).join(" + ");
-          const sellPrices = items.map((item: any) => item.selling_price).join(" + ");
-          const quantities = items.map((item: any) => item.quantity).join(" + ");
-          const taxes = items.map((item: any) => `${item.tax}%`).join(" + ");
+          const items = typeof s.items_json === "string" ? JSON.parse(s.items_json) as ProductItem[] : s.items_json as ProductItem[];
+          const names = items.map((item: ProductItem) => item.name).join(", ");
+          const quantities = items.map((item: ProductItem) => item.quantity).join(" + ");
+          const taxes = items.map((item: ProductItem) => `${item.tax}%`).join(" + ");
+          const costPrices = items.map((item: ProductItem) => `₹${item.cost_price}`).join(" + ");
+          const sellPrices = items.map((item: ProductItem) => `₹${item.selling_price}`).join(" + ");
           return {
             name: names,
             customer_name: s.member_name || "-",
@@ -102,10 +137,10 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
           console.error("Error parsing product items_json:", s.items_json, e);
           return null;
         }
-      }).filter(Boolean);
+      }).filter(Boolean) as FlatProductRow[];
 
   const totalMembership = membershipSales.reduce((sum, s) => sum + (s.amount_paid || 0), 0)
-  const totalProduct = flatProductRows.reduce((sum, s) => sum + (s.amount || 0), 0)
+  const totalProduct = flatProductRows.reduce((sum, s) => sum + (s?.amount || 0), 0)
 
   const handleMembershipExportXLSX = () => {
     const heading = `Membership Sales Report ${fromDate === toDate ? `for ${formattedFrom}` : `from ${formattedFrom} to ${formattedTo}`}`
@@ -138,28 +173,30 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
   const handleProductExportXLSX = () => {
     const heading = `${reportType === "kitchen_s" ? "Kitchen" : "Product"} Sales Report ${fromDate === toDate ? `for ${formattedFrom}` : `from ${formattedFrom} to ${formattedTo}`}`
 
-    const rows: any[] = flatProductRows.map((item) => (
-      reportType === "kitchen_s" ? [
-        item.name,
-        item.customer_name,
-        item.cost_price,
-        item.quantity,
-        item.tax,
-        item.discount,
-        item.amount,
-        item.payment_method
+    const rows: (string | number)[][] = flatProductRows.map((item) => {
+      if (!item) return []; // Handle null items
+      const typedItem = item as FlatProductRow;
+      return reportType === "kitchen_s" ? [
+        typedItem.name,
+        typedItem.customer_name,
+        typedItem.cost_price,
+        typedItem.quantity,
+        typedItem.tax,
+        typedItem.discount,
+        typedItem.amount,
+        typedItem.payment_method
       ] : [
-        item.name,
-        item.customer_name,
-        item.cost_price,
-        item.selling_price,
-        item.quantity,
-        item.tax,
-        item.discount,
-        item.amount,
-        item.payment_method
-      ]
-    ))
+        typedItem.name,
+        typedItem.customer_name,
+        typedItem.cost_price,
+        typedItem.selling_price || "N/A", // Handle optional selling_price
+        typedItem.quantity,
+        typedItem.tax,
+        typedItem.discount,
+        typedItem.amount,
+        typedItem.payment_method
+      ];
+    });
 
     const worksheetData = [
       [heading],
@@ -263,7 +300,7 @@ export default function SalesReport({ fromDate, toDate, reportType }: { fromDate
             </tr>
           </thead>
           <tbody>
-            {flatProductRows.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((item, i) => (
+            {flatProductRows.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((item: FlatProductRow, i) => (
               <tr key={i} className="border-b">
                 <td className="py-2">{item.name}</td>
                 <td>{item.customer_name}</td>

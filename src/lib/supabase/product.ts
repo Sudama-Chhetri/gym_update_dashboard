@@ -6,7 +6,17 @@ export async function getProducts() {
   return data;
 }
 
-export async function addProduct(product) {
+interface ProductPayload {
+  name: string;
+  cost_price: number;
+  selling_price: number;
+  mrp: number;
+  stock: number;
+  tax: number;
+  img_url?: string;
+}
+
+export async function addProduct(product: ProductPayload) {
   const { data: last } = await supabase
     .from('products')
     .select('product_id')
@@ -26,12 +36,12 @@ export async function addProduct(product) {
   if (error) throw error;
 }
 
-export async function updateProduct(product_id, product) {
+export async function updateProduct(product_id: string, product: ProductPayload) {
   const { error } = await supabase.from('products').update(product).eq('product_id', product_id);
   if (error) throw error;
 }
 
-export async function deleteProduct(product_id) {
+export async function deleteProduct(product_id: string) {
   const { error } = await supabase.from('products').delete().eq('product_id', product_id);
   if (error) throw error;
 }

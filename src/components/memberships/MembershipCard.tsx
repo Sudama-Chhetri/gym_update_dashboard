@@ -3,7 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 import { deleteMembership } from '@/lib/supabase/membership';
 
-export default function MembershipCard({ membership, onEdit, onDelete }) {
+import { Membership } from "@/types"
+
+interface MembershipCardProps {
+  membership: Membership;
+  onEdit: (membership: Membership) => void;
+  onDelete: () => void;
+}
+
+export default function MembershipCard({ membership, onEdit, onDelete }: MembershipCardProps) {
   const handleDelete = async () => {
     await deleteMembership(membership.id);
     onDelete();

@@ -7,17 +7,47 @@ import { Input } from "@/components/ui/input"
 import ProductInvoiceDrawer from "@/components/invoices/ProductInvoiceDrawer"
 import { format } from "date-fns"
 
+interface Product {
+  product_id: string;
+  name: string;
+  selling_price: number;
+  cost_price: number;
+  stock: number;
+  mrp: number;
+}
+
+interface CartItem extends Product {
+  quantity: number;
+}
+
+interface Member {
+  name: string;
+  phone: string;
+}
+
+interface InvoiceData {
+  invoice_id: string;
+  items: CartItem[];
+  total: number;
+  discount: number;
+  discountedTotal: number;
+  customerName: string;
+  customerPhone: string;
+  paymentMethod: string;
+  date: string;
+}
+
 export default function ProductPOSPage() {
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState("")
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState<CartItem[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [customerName, setCustomerName] = useState("")
   const [customerPhone, setCustomerPhone] = useState("")
   const [discount, setDiscount] = useState(0)
   const [paymentMethod, setPaymentMethod] = useState("")
-  const [members, setMembers] = useState([])
-  const [invoiceData, setInvoiceData] = useState(null)
+  const [members, setMembers] = useState<Member[]>([])
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const PRODUCTS_PER_PAGE = 6
@@ -46,7 +76,7 @@ export default function ProductPOSPage() {
     currentPage * PRODUCTS_PER_PAGE
   )
 
-  const addToCart = (product) => {
+  const addToCart = (product: Product) => {
     setCart((prev) => {
       const found = prev.find((item) => item.product_id === product.product_id)
       if (!found) {
@@ -62,9 +92,9 @@ export default function ProductPOSPage() {
     })
   }
 
-  const removeFromCart = (product) => {
+  const removeFromCart = (product: Product) => {
     setCart((prev) =>
-      prev.reduce((acc, item) => {
+      prev.reduce((acc: CartItem[], item) => {
         if (item.product_id === product.product_id) {
           const newQuantity = item.quantity - 1
           if (newQuantity > 0) {
@@ -82,7 +112,7 @@ export default function ProductPOSPage() {
     (acc, item) => acc + item.selling_price * item.quantity,
     0
   )
-  const discountedTotal = total - total * (parseFloat(discount) / 100)
+  const discountedTotal = total - total * (discount / 100)
 
   const handleGenerateInvoice = async () => {
     if (!paymentMethod || cart.length === 0) {
@@ -93,9 +123,6 @@ export default function ProductPOSPage() {
     const invoiceId = `IN${Date.now().toString().slice(-6)}`
     const date = format(new Date(), "dd MMM yyyy, hh:mm a")
 
-    const totalRevenue = cart.reduce((acc, item) => acc + item.selling_price * item.quantity, 0)
-    const totalExpenditure = cart.reduce((acc, item) => acc + item.cost_price * item.quantity, 0)
-    const totalProfit = totalRevenue - totalExpenditure
     const totalQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
     await supabase.from("sales").insert([{
@@ -109,7 +136,7 @@ export default function ProductPOSPage() {
     time_of_purchase: new Date().toISOString(),
     items_json: cart,
     amount_paid: discountedTotal,
-    discount: parseFloat(discount),
+    discount: discount,
   }])
 
     await Promise.all(
@@ -136,7 +163,7 @@ export default function ProductPOSPage() {
     setCart([])
   }
 
-  const handleNameChange = (val) => {
+  const handleNameChange = (val: string) => {
     setCustomerName(val)
     const match = members.find((m) => m.name.toLowerCase() === val.toLowerCase())
     if (match) setCustomerPhone(match.phone)
@@ -219,7 +246,7 @@ export default function ProductPOSPage() {
             min={0}
             className="w-full"
             value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
+            onChange={(e) => setDiscount(parseFloat(e.target.value))}
           />
         </div>
 

@@ -8,8 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { addMembership, updateMembership } from '@/lib/supabase/membership';
+import { Membership } from "@/types";
 
-export default function MembershipDrawer({ open, onClose, onSave, editData }) {
+interface MembershipDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  editData: Membership | null;
+}
+
+export default function MembershipDrawer({ open, onClose, onSave, editData }: MembershipDrawerProps) {
   const [duration, setDuration] = useState('');
   const [pricing, setPricing] = useState('');
   const [category, setCategory] = useState('');

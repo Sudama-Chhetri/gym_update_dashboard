@@ -11,7 +11,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState, useEffect } from 'react'
 
-export default function ExpensesDrawer({ open, onClose, onSubmit, initialData }) {
+interface ExpensesDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: { name: string; amount: number; date_of_expense: string; type_of_expense: string; department: string; }) => void;
+  initialData: { name: string; amount: number; date_of_expense: string; type_of_expense: string; department: string; } | null;
+}
+
+export default function ExpensesDrawer({ open, onClose, onSubmit, initialData }: ExpensesDrawerProps) {
   const isEdit = Boolean(initialData)
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')

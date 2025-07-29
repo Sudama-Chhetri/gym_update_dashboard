@@ -9,16 +9,44 @@ import TrainerInvoiceDrawer from '@/components/invoices/TrainerInvoiceDrawer'
 import { useSearchParams } from 'next/navigation'
 
 
+interface Trainer {
+  trainer_id: string;
+  name: string;
+  cost: number;
+}
+
+interface Member {
+  member_id: string;
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  membership_end: string;
+  trainer_assign_end_date: string;
+}
+
+interface InvoiceData {
+  invoice_id: string;
+  date: string;
+  customerName: string;
+  customerPhone: string;
+  trainerName: string;
+  assignStart: string;
+  assignEnd: string;
+  paymentMethod: string;
+  total: number;
+}
+
 export default function TrainerPOSPage() {
-  const [trainers, setTrainers] = useState([])
+  const [trainers, setTrainers] = useState<Trainer[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [suggestions, setSuggestions] = useState([])
-  const [selectedMember, setSelectedMember] = useState(null)
-  const [selectedTrainer, setSelectedTrainer] = useState(null)
+  const [suggestions, setSuggestions] = useState<Member[]>([])
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null)
   const [paymentMethod, setPaymentMethod] = useState('Cash')
   const [loading, setLoading] = useState(false)
   const [showInvoice, setShowInvoice] = useState(false)
-  const [invoiceData, setInvoiceData] = useState(null)
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [assignDate, setAssignDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const searchParams = useSearchParams()
   const prefillMemberId = searchParams.get("member_id")
@@ -57,7 +85,7 @@ export default function TrainerPOSPage() {
     }
   }, [searchQuery])
 
-  const handleSearch = async (query) => {
+  const handleSearch = async (query: string) => {
     setSearchQuery(query)
 
     if (query.length < 2) {

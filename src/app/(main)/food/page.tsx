@@ -8,15 +8,23 @@ import FoodDrawer from '@/components/food/FoodDrawer';
 import { getFoodItems, deleteFoodItem } from '@/lib/supabase/food';
 import { Input } from '@/components/ui/input';
 
+interface FoodItem {
+  food_id: string;
+  name: string;
+  cost: number;
+  tax: number;
+  [key: string]: string | number; // Add index signature
+}
+
 export default function FoodPage() {
-  const [foodItems, setFoodItems] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+  const [filtered, setFiltered] = useState<FoodItem[]>([]);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
   const [page, setPage] = useState(1);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const [editData, setEditData] = useState<FoodItem | null>(null);
 
   const fetchFood = async () => {
     const data = await getFoodItems();
@@ -37,7 +45,7 @@ export default function FoodPage() {
       );
     }
     if (sortKey) {
-      temp.sort((a, b) => sortOrder === 'asc' ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]);
+      temp.sort((a, b) => sortOrder === 'asc' ? (a[sortKey] as number) - (b[sortKey] as number) : (b[sortKey] as number) - (a[sortKey] as number));
     }
     setFiltered(temp);
     setPage(1);

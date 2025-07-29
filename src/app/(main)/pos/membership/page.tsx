@@ -8,25 +8,60 @@ import MembershipInvoiceDrawer from "@/components/invoices/MembershipInvoiceDraw
 
 const JOINING_FEE = 5000;
 
+interface MembershipPlan {
+  id: string;
+  duration: number;
+  pricing: number;
+  category: string;
+}
+
+interface Member {
+  member_id: string;
+  membership_end: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  join_date: string;
+}
+
+interface InvoiceData {
+  invoice_id: string;
+  customerName: string;
+  customerPhone: string;
+  joinDate: string;
+  plan: string;
+  paymentMethod: string;
+  amountPaid: number;
+  date: string;
+  showJoiningFee: boolean;
+  joiningFee: number;
+  startDate: string;
+  endDate: string;
+  category: string;
+  isMembership: boolean;
+  isRenewal: boolean;
+}
+
 export default function MembershipPOS() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [address, setAddress] = useState("")
   const [joinDate, setJoinDate] = useState("")
-  const [membershipPlans, setMembershipPlans] = useState([])
-  const [selectedPlan, setSelectedPlan] = useState(null)
+  const [membershipPlans, setMembershipPlans] = useState<MembershipPlan[]>([])
+  const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [invoiceOpen, setInvoiceOpen] = useState(false)
-  const [invoiceData, setInvoiceData] = useState(null)
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [paymentMethod, setPaymentMethod] = useState("cash")
-  const [categoryOptions, setCategoryOptions] = useState([])
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState("")
-  const [filteredPlans, setFilteredPlans] = useState([])
+  const [filteredPlans, setFilteredPlans] = useState<MembershipPlan[]>([])
 
   const searchParams = useSearchParams()
   const memberId = searchParams.get("member_id")
-  const [existingMember, setExistingMember] = useState(null)
+  const [existingMember, setExistingMember] = useState<Member | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,7 +103,7 @@ export default function MembershipPOS() {
 
     try {
       const today = new Date(joinDate)
-      const duration = parseInt(selectedPlan.duration)
+      const duration = selectedPlan.duration
       let endDate = new Date(today)
 
       if (existingMember && new Date(existingMember.membership_end) > today) {
@@ -253,7 +288,6 @@ export default function MembershipPOS() {
         open={invoiceOpen}
         onClose={() => setInvoiceOpen(false)}
         invoiceData={invoiceData}
-        usePDF
       />
     </div>
   )

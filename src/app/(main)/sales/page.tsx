@@ -8,13 +8,35 @@ import TrainerInvoiceDrawer from "@/components/invoices/TrainerInvoiceDrawer"
 import FoodInvoiceDrawer from "@/components/invoices/FoodInvoiceDrawer"
 import ProductInvoiceDrawer from "@/components/invoices/ProductInvoiceDrawer"
 import { Input } from "@/components/ui/input"
+import { KitchenItem, ProductItem, FoodInvoiceData, ProductInvoiceData, MembershipInvoiceData, TrainerInvoiceData } from "@/types"
+
+interface Sale {
+  invoice_id: string;
+  service_name: string;
+  amount_paid: number;
+  revenue?: number;
+  payment_method: string;
+  payment_status: string;
+  time_of_purchase: string;
+  member_name?: string;
+  member_phone?: string;
+  membership_type?: string;
+  membership_start_date?: string;
+  membership_end_date?: string;
+  category?: string;
+  trainer_name?: string;
+  assign_start?: string;
+  assign_end?: string;
+  items_json?: KitchenItem[] | ProductItem[]; // Adjust this type based on actual item structure
+  discount?: number;
+}
 
 export default function SalesPage() {
-  const [sales, setSales] = useState([])
-  const [selectedInvoice, setSelectedInvoice] = useState(null)
+  const [sales, setSales] = useState<Sale[]>([])
+  const [selectedInvoice, setSelectedInvoice] = useState<MembershipInvoiceData | TrainerInvoiceData | FoodInvoiceData | ProductInvoiceData | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [search, setSearch] = useState("")
-  const [payInvoiceId, setPayInvoiceId] = useState(null)
+  const [payInvoiceId, setPayInvoiceId] = useState<string | null>(null)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("Cash")
   const [currentPage, setCurrentPage] = useState(1)
   const [serviceFilter, setServiceFilter] = useState("All")
@@ -28,12 +50,12 @@ export default function SalesPage() {
         .select("*")
         .order("time_of_purchase", { ascending: false })
 
-      if (!error && data) setSales(data)
+      if (!error && data) setSales(data as Sale[])
     }
     fetchSales()
   }, [])
 
-  const handleViewInvoice = (sale) => {
+  const handleViewInvoice = (sale: Sale) => {
     const common = {
       invoice_id: sale.invoice_id,
       paymentMethod: sale.payment_method || "-",
@@ -45,78 +67,79 @@ export default function SalesPage() {
 
     switch (sale.service_name) {
       case "Membership":
-      const toDate = (str) => new Date(str).toISOString().split("T")[0]
-      const isRenewal = toDate(sale.time_of_purchase) !== toDate(sale.membership_start_date)
+      const toDate = (str: string) => new Date(str).toISOString().split("T")[0]
+      const isRenewal = toDate(sale.time_of_purchase) !== toDate(sale.membership_start_date || '')
 
       setSelectedInvoice({
         ...common,
-        customerName: sale.member_name,
-        customerPhone: sale.member_phone,
-        category: sale.category,
-        plan: sale.membership_type,
-        startDate: sale.membership_start_date,
-        endDate: sale.membership_end_date,
-        amountPaid: sale.amount_paid,
-        joinDate: sale.membership_start_date,
+        customerName: sale.member_name ?? "-",
+        customerPhone: sale.member_phone ?? "-",
+        category: sale.category ?? "-",
+        plan: sale.membership_type ?? "-",
+        startDate: sale.membership_start_date ?? "-",
+        endDate: sale.membership_end_date ?? "-",
+        amountPaid: sale.amount_paid ?? 0,
+        joinDate: sale.membership_start_date ?? "-",
         isMembership: true,
         showJoiningFee: !isRenewal,
+        joiningFee: !isRenewal ? 5000 : 0, // Assuming JOINING_FEE is 5000
+        isRenewal: isRenewal,
       })
       break;
 
       case "Trainer Assignment":
       setSelectedInvoice({
         ...common,
-        customerName: sale.member_name,
-        customerPhone: sale.member_phone,
-        trainerName: sale.trainer_name,
-        assignStart: new Date(sale.assign_start).toLocaleDateString("en-IN", {
+        customerName: sale.member_name ?? "-",
+        customerPhone: sale.member_phone ?? "-",
+        trainerName: sale.trainer_name ?? "-",
+        assignStart: sale.assign_start ? new Date(sale.assign_start).toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "short",
           year: "numeric",
-        }),
-        assignEnd: new Date(sale.assign_end).toLocaleDateString("en-IN", {
+        }) : "-",
+        assignEnd: sale.assign_end ? new Date(sale.assign_end).toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "short",
           year: "numeric",
-        }),
+        }) : "-",
         paymentMethod: sale.payment_method || "-",
-        total: sale.amount_paid,
-        isTrainer: true,
-      });
+        total: sale.amount_paid ?? 0,
+      } as TrainerInvoiceData);
       break;
 
       case "Restaurant Sale":
         setSelectedInvoice({
           ...common,
-          items: sale.items_json || [],
+          items: (sale.items_json || []) as { name: string; cost: number; quantity: number; }[],
           total: sale.amount_paid + (sale.discount || 0),
           discount: sale.discount || 0,
           discountedTotal: sale.amount_paid,
-          customerName: sale.member_name,
-          customerPhone: sale.member_phone,
+          customerName: sale.member_name ?? "-",
+          customerPhone: sale.member_phone ?? "-",
           isRestaurant: true,
-        })
-        break
+        } as FoodInvoiceData);
+        break;
 
       case "Product Purchase":
       default:
         setSelectedInvoice({
           ...common,
-          items: sale.items_json || [],
+          items: (sale.items_json || []) as { name: string; selling_price: number; mrp?: number; quantity: number; }[],
           total: sale.amount_paid + (sale.discount || 0),
           discount: sale.discount || 0,
           discountedTotal: sale.amount_paid,
-          customerName: sale.member_name,
-          customerPhone: sale.member_phone,
+          customerName: sale.member_name ?? "-",
+          customerPhone: sale.member_phone ?? "-",
           isProduct: true,
-        })
-        break
+        } as ProductInvoiceData);
+        break;
     }
 
     setDrawerOpen(true)
   }
 
-  const handleMarkAsPaid = async (invoiceId, newMethod) => {
+  const handleMarkAsPaid = async (invoiceId: string, newMethod: string) => {
     const { error } = await supabase
       .from("sales")
       .update({
@@ -135,7 +158,7 @@ export default function SalesPage() {
       .select("*")
       .order("time_of_purchase", { ascending: false });
 
-    setSales(data);
+    if (data) setSales(data);
     setPayInvoiceId(null); // close modal
     alert("✅ Payment marked as paid");
   };
@@ -302,34 +325,34 @@ export default function SalesPage() {
       </div>
     )}
 
-      {selectedInvoice?.isMembership && (
+      {(selectedInvoice && "isMembership" in selectedInvoice && selectedInvoice.isMembership) ? (
         <MembershipInvoiceDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          invoiceData={selectedInvoice}
+          invoiceData={selectedInvoice as MembershipInvoiceData}
         />
-      )}
-      {selectedInvoice?.isTrainer && (
+      ) : null}
+      {(selectedInvoice && "isTrainer" in selectedInvoice && selectedInvoice.isTrainer) ? (
         <TrainerInvoiceDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          invoiceData={selectedInvoice}
+          invoiceData={selectedInvoice as TrainerInvoiceData}
         />
-      )}
-      {selectedInvoice?.isRestaurant && (
+      ) : null}
+      {(selectedInvoice && "isRestaurant" in selectedInvoice && selectedInvoice.isRestaurant) ? (
         <FoodInvoiceDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          invoiceData={selectedInvoice}
+          invoiceData={selectedInvoice as FoodInvoiceData}
         />
-      )}
-      {selectedInvoice?.isProduct && (
+      ) : null}
+      {(selectedInvoice && "isProduct" in selectedInvoice && selectedInvoice.isProduct) ? (
         <ProductInvoiceDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          invoiceData={selectedInvoice}
+          invoiceData={selectedInvoice as ProductInvoiceData}
         />
-      )}
+      ) : null}
     </div>
   )
 }

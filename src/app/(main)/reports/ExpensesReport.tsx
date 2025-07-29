@@ -7,9 +7,18 @@ import { DownloadIcon } from "lucide-react"
 import * as XLSX from "xlsx"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
+interface Expense {
+  expense_id: string;
+  name: string;
+  amount: number;
+  type_of_expense: string;
+  date_of_expense: string;
+  department: string;
+}
+
 export default function ExpensesReport({ fromDate, toDate, reportType }: { fromDate: string, toDate: string, reportType: 'gym' | 'kitchen' }) {
   const supabase = createClientComponentClient()
-  const [expenses, setExpenses] = useState([])
+  const [expenses, setExpenses] = useState<Expense[]>([])
   const [currentPage, setCurrentPage] = useState(1)
 
   const ITEMS_PER_PAGE = 5

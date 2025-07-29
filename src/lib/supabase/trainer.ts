@@ -13,7 +13,15 @@ export async function getTrainers() {
   return data;
 }
 
-export async function addTrainer(trainer) {
+interface TrainerPayload {
+  name: string;
+  contact: string;
+  email: string;
+  age: number;
+  cost: number;
+}
+
+export async function addTrainer(trainer: TrainerPayload) {
   const { data, error } = await supabase.from('trainers').insert([trainer]);
   if (error) {
     console.error('Error adding trainer:', error);
@@ -21,7 +29,7 @@ export async function addTrainer(trainer) {
   return data;
 }
 
-export async function updateTrainer(trainer_id, trainer) {
+export async function updateTrainer(trainer_id: string, trainer: TrainerPayload) {
   const { data, error } = await supabase
     .from('trainers')
     .update(trainer)
@@ -32,17 +40,17 @@ export async function updateTrainer(trainer_id, trainer) {
   return data;
 }
 
-export async function deleteTrainer(trainer_id) {
+export async function deleteTrainer(trainer_id: string) {
   const { error } = await supabase.from('trainers').delete().eq('trainer_id', trainer_id);
   if (error) {
     console.error('Error deleting trainer:', error);
   }
 }
 
-export async function getMembersByTrainer(trainerId: string) {
+export async function getMembersByTrainer(trainerId: string): Promise<{ member_id: string; name: string; }[]> {
   const { data, error } = await supabase
     .from("members")
-    .select("name")
+    .select("member_id, name")
     .eq("trainer_assigned", trainerId)
 
   if (error) {

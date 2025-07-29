@@ -8,14 +8,23 @@ import ExpensesDrawer from '@/components/expenses/ExpensesDrawer'
 import { supabase } from '@/lib/supabase/supabaseClient'
 
 export default function ExpensesPage() {
-  const [expenses, setExpenses] = useState([])
-  const [filtered, setFiltered] = useState([])
+  interface Expense {
+    expense_id?: string;
+    name: string;
+    amount: number;
+    date_of_expense: string;
+    type_of_expense: string;
+    department: string;
+  }
+
+  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [filtered, setFiltered] = useState<Expense[]>([])
   const [search, setSearch] = useState('')
   const [sortKey, setSortKey] = useState('')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [page, setPage] = useState(1)
   const [openDrawer, setOpenDrawer] = useState(false)
-  const [editData, setEditData] = useState(null)
+  const [editData, setEditData] = useState<Expense | null>(null)
 
   const fetchExpenses = async () => {
     const { data, error } = await supabase.from('expenses').select('*')
@@ -41,8 +50,17 @@ export default function ExpensesPage() {
 
     if (sortKey) {
       temp.sort((a, b) => {
-        if (sortOrder === 'asc') return a[sortKey] > b[sortKey] ? 1 : -1
-        else return a[sortKey] < b[sortKey] ? 1 : -1
+        const aValue = a[sortKey as keyof Expense];
+        const bValue = b[sortKey as keyof Expense];
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+        } else {
+          // Fallback for other types or mixed types
+          return 0;
+        }
       })
     }
 
@@ -117,7 +135,7 @@ export default function ExpensesPage() {
                 <td className="p-2">{exp.department}</td>
                 <td className="p-2 space-x-2">
                   <Button size="sm" onClick={() => { setEditData(exp); setOpenDrawer(true); }}>Edit</Button>
-                  <Button size="sm" variant="destructive" onClick={() => handleDelete(exp.expense_id)}>Delete</Button>
+                  <Button size="sm" variant="destructive" onClick={() => exp.expense_id && handleDelete(exp.expense_id)}>Delete</Button>
                 </td>
               </tr>
             ))}
@@ -136,7 +154,7 @@ export default function ExpensesPage() {
       <ExpensesDrawer
         open={openDrawer}
         onClose={() => { setEditData(null); setOpenDrawer(false); }}
-        onSubmit={(data) => {
+        onSubmit={(data: Expense) => {
           if (editData) {
             supabase.from('expenses').update(data).eq('expense_id', editData.expense_id).then(fetchExpenses)
           } else {

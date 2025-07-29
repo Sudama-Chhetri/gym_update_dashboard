@@ -3,16 +3,24 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useEffect, useState } from 'react'
 import { addTrainer, updateTrainer } from '@/lib/supabase/trainer'
+import { Trainer } from "@/types"
 
-export default function TrainerDrawer({ open, onClose, onSave, editData }) {
-  const [form, setForm] = useState({
-    name: '',
-    contact: '',
-    email: '',
-    address: '',
-    age: '',
-    cost: '',
-  })
+interface TrainerDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  editData: Trainer | null;
+}
+
+export default function TrainerDrawer({ open, onClose, onSave, editData }: TrainerDrawerProps) {
+  const [form, setForm] = useState<{
+    name: string;
+    contact: string;
+    email: string;
+    age: string;
+    cost: string;
+    [key: string]: string; // Add index signature
+  }>({ name: '', contact: '', email: '', age: '', cost: '' });
 
   useEffect(() => {
     if (editData) {
@@ -20,34 +28,32 @@ export default function TrainerDrawer({ open, onClose, onSave, editData }) {
         name: editData.name,
         contact: editData.contact,
         email: editData.email,
-        address: editData.address,
         age: editData.age?.toString() || '',
         cost: editData.cost?.toString() || '',
-      })
+      });
     } else {
-      setForm({ name: '', contact: '', email: '', address: '', age: '', cost: '' })
+      setForm({ name: '', contact: '', email: '', age: '', cost: '' });
     }
-  }, [editData, open])
+  }, [editData, open]);
 
   const handleSubmit = async () => {
     const payload = {
       name: form.name,
       contact: form.contact,
       email: form.email,
-      address: form.address,
       age: parseInt(form.age),
       cost: parseInt(form.cost),
-    }
+    };
 
     if (editData) {
-      await updateTrainer(editData.trainer_id, payload)
+      await updateTrainer(editData.trainer_id, payload);
     } else {
-      await addTrainer(payload)
+      await addTrainer(payload);
     }
 
-    onSave()
-    onClose()
-  }
+    onSave();
+    onClose();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -60,7 +66,6 @@ export default function TrainerDrawer({ open, onClose, onSave, editData }) {
             { name: 'name' },
             { name: 'contact' },
             { name: 'email' },
-            { name: 'address' },
             { name: 'age' },
             { name: 'cost' },
           ].map((field) => (
@@ -81,5 +86,5 @@ export default function TrainerDrawer({ open, onClose, onSave, editData }) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

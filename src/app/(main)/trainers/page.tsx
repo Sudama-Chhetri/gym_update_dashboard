@@ -8,14 +8,16 @@ import TrainerDrawer from '@/components/trainers/TrainerDrawer';
 import { getTrainers, deleteTrainer, getMembersByTrainer } from '@/lib/supabase/trainer';
 import { Input } from '@/components/ui/input';
 
+import { Trainer, AssignedMember } from "@/types"
+
 export default function TrainersPage() {
-  const [trainers, setTrainers] = useState([]);
+  const [trainers, setTrainers] = useState<Trainer[]>([])
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const [editData, setEditData] = useState<Trainer | null>(null);
   const [search, setSearch] = useState('');
 
-  const [selectedTrainer, setSelectedTrainer] = useState(null);
-  const [assignedMembers, setAssignedMembers] = useState([]);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [assignedMembers, setAssignedMembers] = useState<AssignedMember[]>([]);
   const [showMemberPopup, setShowMemberPopup] = useState(false);
 
   const fetchTrainers = async () => {
@@ -31,7 +33,7 @@ export default function TrainersPage() {
     t.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleViewMembers = async (trainer) => {
+  const handleViewMembers = async (trainer: Trainer) => {
     const members = await getMembersByTrainer(trainer.trainer_id);
     setSelectedTrainer(trainer);
     setAssignedMembers(members);
@@ -60,8 +62,8 @@ export default function TrainersPage() {
           <TrainerCard
             key={trainer.trainer_id}
             trainer={trainer}
-            onEdit={(t) => { setEditData(t); setOpenDrawer(true); }}
-            onDelete={async (id) => {
+            onEdit={(t: Trainer) => { setEditData(t); setOpenDrawer(true); }}
+            onDelete={async (id: string) => {
               await deleteTrainer(id);
               fetchTrainers();
             }}

@@ -8,15 +8,26 @@ import ProductDrawer from '@/components/products/ProductDrawer';
 import { getProducts } from '@/lib/supabase/product';
 import { Input } from '@/components/ui/input';
 
+interface Product {
+  product_id: string;
+  name: string;
+  cost_price: number;
+  selling_price: number;
+  mrp: number;
+  stock: number;
+  tax: number;
+  [key: string]: string | number; // Add index signature
+}
+
 export default function ProductsPage() {
-  const [products, setProducts] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filtered, setFiltered] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
   const [page, setPage] = useState(1);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const [editData, setEditData] = useState<Product | null>(null);
 
   const fetchProducts = async () => {
     const data = await getProducts();
@@ -37,13 +48,13 @@ export default function ProductsPage() {
       );
     }
     if (sortKey) {
-      temp.sort((a, b) => sortOrder === 'asc' ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey]);
+      temp.sort((a, b) => sortOrder === 'asc' ? (a[sortKey] as number) - (b[sortKey] as number) : (b[sortKey] as number) - (a[sortKey] as number));
     }
     setFiltered(temp);
     setPage(1);
   }, [search, sortKey, sortOrder, products]);
 
-  const handleSort = (key) => {
+  const handleSort = (key: string) => {
     if (sortKey === key) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -52,7 +63,7 @@ export default function ProductsPage() {
     }
   };
 
-  const SortIcon = ({ column }) => (
+  const SortIcon = ({ column }: { column: string }) => (
     sortKey === column ? (
       sortOrder === 'asc' ? <ChevronUp size={14} className="inline ml-1" /> : <ChevronDown size={14} className="inline ml-1" />
     ) : null

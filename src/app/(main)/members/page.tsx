@@ -4,14 +4,17 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/supabaseClient"
 import { differenceInDays, isAfter } from "date-fns"
 import { useRouter } from "next/navigation"
+import { Member } from "@/types"
 import MemberDrawer from "@/components/members/MemberDrawer"
 
+
+
 export default function MembersPage() {
-  const [members, setMembers] = useState([])
+  const [members, setMembers] = useState<Member[] | []>([])
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [trainerStatusFilter, setTrainerStatusFilter] = useState("all")
-  const [editMember, setEditMember] = useState(null)
+  const [editMember, setEditMember] = useState<Member | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const router = useRouter()
 
@@ -28,7 +31,7 @@ export default function MembersPage() {
       return
     }
 
-    const trainerMap = {}
+    const trainerMap: { [key: string]: string } = {}
     trainersData.forEach(tr => {
       trainerMap[tr.trainer_id] = tr.name
     })
@@ -98,7 +101,7 @@ export default function MembersPage() {
     return `${daysLeft} days left`
   }
 
-  const handleEdit = (member) => {
+  const handleEdit = (member: Member) => {
     setEditMember(member)
     setDrawerOpen(true)
   }

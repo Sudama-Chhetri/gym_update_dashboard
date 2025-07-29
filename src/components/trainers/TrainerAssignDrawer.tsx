@@ -7,10 +7,30 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/supabaseClient'
 import { format } from 'date-fns'
 
-export default function TrainerAssignDrawer({ open, onClose, onSave, trainer }) {
-  const [members, setMembers] = useState([])
+interface Trainer {
+  trainer_id: string;
+  name: string;
+  cost: number;
+}
+
+interface Member {
+  member_id: string;
+  name: string;
+  phone: string;
+  email: string;
+}
+
+interface TrainerAssignDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  trainer: Trainer | null;
+}
+
+export default function TrainerAssignDrawer({ open, onClose, onSave, trainer }: TrainerAssignDrawerProps) {
+  const [members, setMembers] = useState<Member[]>([])
   const [search, setSearch] = useState('')
-  const [selectedMember, setSelectedMember] = useState(null)
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [paymentMethod, setPaymentMethod] = useState('Cash')
   const [loading, setLoading] = useState(false)
 

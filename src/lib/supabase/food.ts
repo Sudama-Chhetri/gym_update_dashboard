@@ -14,7 +14,14 @@ export async function getFoodItems() {
   return data;
 }
 
-export async function addFoodItem(item) {
+interface FoodItemPayload {
+  name: string;
+  cost: number;
+  tax: number;
+  img_url?: string;
+}
+
+export async function addFoodItem(item: FoodItemPayload) {
   const { data, error } = await supabase.from('food').insert([item]);
   if (error) {
     console.error('Error adding food item:', error);
@@ -22,7 +29,7 @@ export async function addFoodItem(item) {
   return data;
 }
 
-export async function updateFoodItem(food_id, item) {
+export async function updateFoodItem(food_id: string, item: FoodItemPayload) {
   const { data, error } = await supabase
     .from('food')
     .update(item)
@@ -33,7 +40,7 @@ export async function updateFoodItem(food_id, item) {
   return data;
 }
 
-export async function deleteFoodItem(food_id) {
+export async function deleteFoodItem(food_id: string) {
   const { error } = await supabase.from('food').delete().eq('food_id', food_id);
   if (error) {
     console.error('Error deleting food item:', error);

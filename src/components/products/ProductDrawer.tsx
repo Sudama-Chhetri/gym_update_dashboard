@@ -4,8 +4,35 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { addProduct, updateProduct } from '@/lib/supabase/product';
 
-export default function ProductDrawer({ open, onClose, onSave, editData }) {
-  const [form, setForm] = useState({
+interface Product {
+  product_id: string;
+  name: string;
+  cost_price: number;
+  selling_price: number;
+  mrp: number;
+  stock: number;
+  tax: number;
+  img_url?: string;
+}
+
+interface ProductDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  editData: Product | null;
+}
+
+export default function ProductDrawer({ open, onClose, onSave, editData }: ProductDrawerProps) {
+  const [form, setForm] = useState<{
+    name: string;
+    cost_price: string;
+    selling_price: string;
+    mrp: string;
+    stock: string;
+    tax: string;
+    img_url: string;
+    [key: string]: string; // Add index signature
+  }>({
     name: '',
     cost_price: '',
     selling_price: '',

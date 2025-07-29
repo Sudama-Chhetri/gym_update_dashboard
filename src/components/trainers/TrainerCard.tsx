@@ -1,7 +1,15 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Trainer } from "@/types"
 
-export default function TrainerCard({ trainer, onEdit, onDelete, onViewMembers }) {
+interface TrainerCardProps {
+  trainer: Trainer;
+  onEdit: (trainer: Trainer) => void;
+  onDelete: (trainerId: string) => void;
+  onViewMembers: (trainer: Trainer) => void;
+}
+
+export default function TrainerCard({ trainer, onEdit, onDelete, onViewMembers }: TrainerCardProps) {
   return (
     <Card className="w-full max-w-sm border shadow-sm">
       <CardContent className="p-4 space-y-2">

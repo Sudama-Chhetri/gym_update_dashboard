@@ -5,8 +5,29 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { addFoodItem, updateFoodItem } from '@/lib/supabase/food';
 
-export default function FoodDrawer({ open, onClose, onSave, editData }) {
-  const [form, setForm] = useState({
+interface FoodItem {
+  food_id: string;
+  name: string;
+  cost: number;
+  tax: number;
+  img_url?: string;
+}
+
+interface FoodDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  editData: FoodItem | null;
+}
+
+export default function FoodDrawer({ open, onClose, onSave, editData }: FoodDrawerProps) {
+  const [form, setForm] = useState<{
+    name: string;
+    cost: string;
+    tax: string;
+    img_url: string;
+    [key: string]: string; // Add index signature
+  }>({
     name: '',
     cost: '',
     tax: '',

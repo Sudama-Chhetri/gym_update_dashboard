@@ -9,7 +9,22 @@ import { Button } from '@/components/ui/button'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/supabaseClient'
 
-export default function MemberDrawer({ open, onClose, onSave, editData }) {
+interface Member {
+  member_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+interface MemberDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  editData: Member | null;
+}
+
+export default function MemberDrawer({ open, onClose, onSave, editData }: MemberDrawerProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -39,16 +54,18 @@ export default function MemberDrawer({ open, onClose, onSave, editData }) {
       address,
     }
 
-    const { error } = await supabase
-      .from('members')
-      .update(updates)
-      .eq('member_id', editData.member_id)
+    if (editData) {
+      const { error } = await supabase
+        .from('members')
+        .update(updates)
+        .eq('member_id', editData.member_id)
 
-    if (!error) {
-      onSave()
-      onClose()
-    } else {
-      console.error('Error updating member:', error)
+      if (!error) {
+        onSave()
+        onClose()
+      } else {
+        console.error('Error updating member:', error)
+      }
     }
   }
 

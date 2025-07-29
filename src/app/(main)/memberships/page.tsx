@@ -7,10 +7,12 @@ import MembershipDrawer from '@/components/memberships/MembershipDrawer';
 import MembershipCard from '@/components/memberships/MembershipCard';
 import { getMemberships } from '@/lib/supabase/membership';
 
+import { Membership } from "@/types"
+
 export default function MembershipsPage() {
-  const [memberships, setMemberships] = useState([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const [editData, setEditData] = useState<Membership | null>(null);
 
   const fetchMemberships = async () => {
     const data = await getMemberships();
@@ -34,7 +36,7 @@ export default function MembershipsPage() {
           <MembershipCard
             key={membership.id}
             membership={membership}
-            onEdit={(data) => { setEditData(data); setOpenDrawer(true); }}
+            onEdit={(data: Membership) => { setEditData(data); setOpenDrawer(true); }}
             onDelete={fetchMemberships}
           />
         ))}

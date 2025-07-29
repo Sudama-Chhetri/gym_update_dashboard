@@ -7,17 +7,45 @@ import { Input } from "@/components/ui/input"
 import FoodInvoiceDrawer from "@/components/invoices/FoodInvoiceDrawer"
 import { format } from "date-fns"
 
+interface FoodItem {
+  food_id: string;
+  name: string;
+  cost: number;
+  tax: number;
+}
+
+interface CartItem extends FoodItem {
+  quantity: number;
+}
+
+interface Member {
+  name: string;
+  phone: string;
+}
+
+interface InvoiceData {
+  invoice_id: string;
+  items: CartItem[];
+  total: number;
+  discount: number;
+  discountedTotal: number;
+  customerName: string;
+  customerPhone: string;
+  paymentMethod: string;
+  date: string;
+}
+
 export default function RestaurantPOSPage() {
-  const [foodItems, setFoodItems] = useState([])
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([])
   const [search, setSearch] = useState("")
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState<CartItem[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [customerName, setCustomerName] = useState("")
   const [customerPhone, setCustomerPhone] = useState("")
   const [discount, setDiscount] = useState(0)
   const [paymentMethod, setPaymentMethod] = useState("")
-  const [members, setMembers] = useState([])
-  const [invoiceData, setInvoiceData] = useState(null)
+  const [members, setMembers] = useState<Member[]>([])
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const ITEMS_PER_PAGE = 6
@@ -42,7 +70,7 @@ export default function RestaurantPOSPage() {
     currentPage * ITEMS_PER_PAGE
   )
 
-  const addToCart = (item) => {
+  const addToCart = (item: FoodItem) => {
     setCart((prev) => {
       const found = prev.find((f) => f.food_id === item.food_id)
       return found
@@ -53,9 +81,9 @@ export default function RestaurantPOSPage() {
     })
   }
 
-  const removeFromCart = (item) => {
+  const removeFromCart = (item: FoodItem) => {
     setCart((prev) =>
-      prev.reduce((acc, f) => {
+      prev.reduce((acc: CartItem[], f) => {
         if (f.food_id === item.food_id) {
           const newQty = f.quantity - 1
           if (newQty > 0) acc.push({ ...f, quantity: newQty })
@@ -66,7 +94,7 @@ export default function RestaurantPOSPage() {
   }
 
   const total = cart.reduce((acc, item) => acc + item.cost * item.quantity, 0)
-  const discountedTotal = total - total * (parseFloat(discount) / 100)
+  const discountedTotal = total - total * (discount / 100)
 
   const handleGenerateInvoice = async () => {
     if (!paymentMethod || cart.length === 0) {
@@ -92,7 +120,7 @@ export default function RestaurantPOSPage() {
       payment_status: paymentMethod === 'Due' ? 'unpaid' : 'paid',
       time_of_purchase: isoIST,
       items_json: cart,
-      discount: parseFloat(discount),
+      discount: discount,
       category: "restaurant"
     })
 
@@ -112,7 +140,7 @@ export default function RestaurantPOSPage() {
     setCart([])
   }
 
-  const handleNameChange = (val) => {
+  const handleNameChange = (val: string) => {
     setCustomerName(val)
     const match = members.find((m) => m.name.toLowerCase() === val.toLowerCase())
     if (match) setCustomerPhone(match.phone)
@@ -188,7 +216,7 @@ export default function RestaurantPOSPage() {
             min={0}
             className="w-full"
             value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
+            onChange={(e) => setDiscount(parseFloat(e.target.value))}
           />
         </div>
 

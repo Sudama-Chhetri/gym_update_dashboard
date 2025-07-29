@@ -16,7 +16,7 @@ export async function addMembership(duration: number, pricing: number, category:
   if (error) throw error
 }
 
-export async function updateMembership(id: number, duration: number, pricing: number, category: string) {
+export async function updateMembership(id: string, duration: number, pricing: number, category: string) {
   const { error } = await supabase
     .from('membership')
     .update({ duration, pricing, category })
@@ -24,7 +24,7 @@ export async function updateMembership(id: number, duration: number, pricing: nu
   if (error) throw error
 }
 
-export async function deleteMembership(id: number) {
+export async function deleteMembership(id: string) {
   const { error } = await supabase
     .from('membership')
     .delete()

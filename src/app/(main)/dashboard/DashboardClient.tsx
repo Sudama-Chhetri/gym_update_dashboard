@@ -12,7 +12,8 @@ import {
   BarElement,
   ArcElement,
 } from 'chart.js'
-import { Line, Bar } from 'react-chartjs-2'
+import { Line, Bar, Pie } from 'react-chartjs-2'
+import { TooltipItem } from 'chart.js'
 
 ChartJS.register(
   CategoryScale,
@@ -28,7 +29,7 @@ ChartJS.register(
 
 import { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { startOfDay, startOfMonth, startOfYear } from 'date-fns'
+import { startOfDay, startOfMonth, startOfYear, format } from 'date-fns'
 
 export default function DashboardClient() {
   const supabase = createClientComponentClient()
@@ -36,10 +37,24 @@ export default function DashboardClient() {
   const [totalTransactions, setTotalTransactions] = useState(0)
   const [totalRevenue, setTotalRevenue] = useState(0)
   const [filter, setFilter] = useState<'Day' | 'Month' | 'Year'>('Month')
-  const [revenueChartData, setRevenueChartData] = useState({ labels: [], datasets: [] })
-  const [members, setMembers] = useState([])
-  const [memberCategoryData, setMemberCategoryData] = useState({ labels: [], datasets: [] })
+  interface ChartData {
+  labels: string[];
+  datasets: { label: string; data: number[]; backgroundColor: string | string[]; borderColor?: string; tension?: number; }[];
+}
+
+  const [revenueChartData, setRevenueChartData] = useState<ChartData>({ labels: [], datasets: [] })
+  const [members, setMembers] = useState<Member[] | []>([])
+  const [memberCategoryData, setMemberCategoryData] = useState<ChartData>({ labels: [], datasets: [] })
   const [topTrainer, setTopTrainer] = useState<{ name: string; count: number } | null>(null)
+  const [salesByCategoryData, setSalesByCategoryData] = useState<ChartData>({ labels: [], datasets: [] })
+  const [paymentMethodData, setPaymentMethodData] = useState<ChartData>({ labels: [], datasets: [] })
+  const [newMembersChartData, setNewMembersChartData] = useState<ChartData>({ labels: [], datasets: [] })
+
+  interface Member {
+    membership_status: string;
+    join_date: string;
+    // Add other properties of a member if they are used elsewhere
+  }
 
   useEffect(() => {
     const now = new Date()
@@ -54,7 +69,7 @@ export default function DashboardClient() {
     const fetchDashboardData = async () => {
       const { data: salesData } = await supabase
         .from('sales')
-        .select('amount_paid, time_of_purchase, payment_status, category, trainer_name, items_json, service_name')
+        .select('amount_paid, time_of_purchase, payment_status, category, trainer_name, items_json, service_name, payment_method')
         .gte('time_of_purchase', fromDate.toISOString())
 
       if (salesData) {
@@ -63,14 +78,25 @@ export default function DashboardClient() {
         const total = paidData.reduce((sum, row) => sum + (row.amount_paid || 0), 0)
         setTotalRevenue(total)
 
-        const chartLabels = paidData.map(d => new Date(d.time_of_purchase).toLocaleString())
-        const chartValues = paidData.map(d => d.amount_paid)
+        const aggregatedData: { [key: string]: number } = {};
+        paidData.forEach(d => {
+          const date = new Date(d.time_of_purchase);
+          let label;
+          switch (filter) {
+            case 'Day': label = format(date, 'HH:00'); break;
+            case 'Month': label = format(date, 'MMM dd'); break;
+            case 'Year': label = format(date, 'MMM yyyy'); break;
+          }
+          aggregatedData[label] = (aggregatedData[label] || 0) + (d.amount_paid || 0);
+        });
+
+        const chartLabels = Object.keys(aggregatedData).sort();
+        const chartValues = chartLabels.map(label => aggregatedData[label]);
         setRevenueChartData({
           labels: chartLabels,
           datasets: [{
             label: 'Revenue',
             data: chartValues,
-            fill: true,
             backgroundColor: 'rgba(59, 130, 246, 0.2)',
             borderColor: 'rgba(59, 130, 246, 1)',
             tension: 0.4,
@@ -79,7 +105,7 @@ export default function DashboardClient() {
 
         // Member Distribution Chart (from sales with service_name = membership)
         const membershipData = paidData.filter(sale => sale.service_name?.toLowerCase().includes('membership'))
-        const categoryCounts = membershipData.reduce((acc, sale) => {
+        const categoryCounts = membershipData.reduce((acc: { [key: string]: number }, sale) => {
           const cat = sale.category || 'Unknown'
           acc[cat] = (acc[cat] || 0) + 1
           return acc
@@ -90,17 +116,59 @@ export default function DashboardClient() {
         })
 
         // Top Trainer
-        const trainerCountMap = paidData.reduce((acc, row) => {
+        const trainerCountMap = paidData.reduce((acc: { [key: string]: number }, row) => {
           if (row.trainer_name) acc[row.trainer_name] = (acc[row.trainer_name] || 0) + 1
           return acc
         }, {})
         const topTrainerEntry = Object.entries(trainerCountMap).sort((a, b) => b[1] - a[1])[0]
         if (topTrainerEntry) setTopTrainer({ name: topTrainerEntry[0], count: topTrainerEntry[1] })
+
+        // Sales by Service Category
+        const salesByCategoryMap = paidData.reduce((acc: { [key: string]: number }, row) => {
+          const service = row.service_name || 'Other'
+          acc[service] = (acc[service] || 0) + (row.amount_paid || 0)
+          return acc
+        }, {})
+        setSalesByCategoryData({
+          labels: Object.keys(salesByCategoryMap),
+          datasets: [{
+            label: 'Revenue by Service',
+            data: Object.values(salesByCategoryMap),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.6)',
+              'rgba(54, 162, 235, 0.6)',
+              'rgba(255, 206, 86, 0.6)',
+              'rgba(75, 192, 192, 0.6)',
+              'rgba(153, 102, 255, 0.6)',
+            ],
+          }],
+        })
+
+        // Payment Method Distribution
+        const paymentMethodMap = paidData.reduce((acc: { [key: string]: number }, row) => {
+          const method = row.payment_method || 'Unknown'
+          acc[method] = (acc[method] || 0) + 1
+          return acc
+        }, {})
+        setPaymentMethodData({
+          labels: Object.keys(paymentMethodMap),
+          datasets: [{
+            label: 'Payment Methods',
+            data: Object.values(paymentMethodMap),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.6)',
+              'rgba(54, 162, 235, 0.6)',
+              'rgba(255, 206, 86, 0.6)',
+              'rgba(75, 192, 192, 0.6)',
+              'rgba(153, 102, 255, 0.6)',
+            ],
+          }],
+        })
       }
     }
 
     fetchDashboardData()
-  }, [filter])
+  }, [filter, supabase])
 
 
   useEffect(() => {
@@ -109,7 +177,33 @@ export default function DashboardClient() {
       if (membersData) setMembers(membersData)
     }
     fetchMembers()
-  }, [])
+  }, [supabase])
+
+  useEffect(() => {
+    if (members.length > 0) {
+      const monthlyNewMembers = members.reduce((acc: { [key: string]: number }, member) => {
+        const joinDate = new Date(member.join_date);
+        const monthYear = format(joinDate, 'MMM yyyy');
+        acc[monthYear] = (acc[monthYear] || 0) + 1;
+        return acc;
+      }, {});
+
+      const sortedLabels = Object.keys(monthlyNewMembers).sort((a, b) => {
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+        return dateA.getTime() - dateB.getTime();
+      });
+
+      setNewMembersChartData({
+        labels: sortedLabels,
+        datasets: [{
+          label: 'New Members',
+          data: sortedLabels.map(label => monthlyNewMembers[label]),
+          backgroundColor: '#4ade80',
+        }],
+      });
+    }
+  }, [members]);
 
   const activeMembers = members.filter(m => m.membership_status === 'active')
   const expiringSoon = members.filter(m => m.membership_status === 'expiring soon')
@@ -122,12 +216,12 @@ export default function DashboardClient() {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (context) => `₹${context.raw} on ${revenueChartData.labels[context.dataIndex]}`,
+          label: (context: TooltipItem<'line'>) => `₹${context.raw} on ${revenueChartData.labels[context.dataIndex]}`,
         },
       },
     },
     scales: {
-      x: { display: false },
+      x: { beginAtZero: true },
       y: { beginAtZero: true },
     },
   }
@@ -186,11 +280,40 @@ export default function DashboardClient() {
         </div>
       </div>
 
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 col-span-1 md:col-span-2">
+        <div className="bg-white shadow rounded-2xl p-6">
+          <h2 className="text-lg font-semibold mb-4">Members Distribution</h2>
+          <div className="">
+            {memberCategoryData.labels.length > 0 && (
+              <Bar data={memberCategoryData} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }} />
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white shadow rounded-2xl p-6">
+          <h2 className="text-lg font-semibold mb-4">Sales by Service Category</h2>
+          <div className="">
+            {salesByCategoryData.labels.length > 0 && (
+              <Bar data={salesByCategoryData} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }} />
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2">
-        <h2 className="text-lg font-semibold mb-4">Members Distribution</h2>
+        <h2 className="text-lg font-semibold mb-4">New Members Joined Over Time</h2>
         <div className="">
-          {memberCategoryData.labels.length > 0 && (
-            <Bar data={memberCategoryData} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }} />
+          {newMembersChartData.labels.length > 0 && (
+            <Bar data={newMembersChartData} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }} />
+          )}
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-2xl p-6 col-span-1">
+        <h2 className="text-lg font-semibold mb-4">Payment Method Distribution</h2>
+        <div className="h-[300px] flex items-center justify-center">
+          {paymentMethodData.labels.length > 0 && (
+            <Pie data={paymentMethodData} options={{ responsive: true, plugins: { legend: { position: 'right' } } }} />
           )}
         </div>
       </div>
