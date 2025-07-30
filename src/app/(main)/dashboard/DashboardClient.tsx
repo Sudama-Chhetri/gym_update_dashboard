@@ -114,7 +114,13 @@ export default function DashboardClient() {
         }, {})
         setMemberCategoryData({
           labels: Object.keys(categoryCounts),
-          datasets: [{ label: 'Members Distribution', data: Object.values(categoryCounts), backgroundColor: '#60a5fa' }],
+          datasets: [{ label: 'Members Distribution', data: Object.values(categoryCounts), backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)',
+          ] }],
         })
 
         // Top Trainer
@@ -148,10 +154,12 @@ export default function DashboardClient() {
 
         // Payment Method Distribution
         const paymentMethodMap = paidData.reduce((acc: { [key: string]: number }, row) => {
-          const method = row.payment_method || 'Unknown'
-          acc[method] = (acc[method] || 0) + 1
-          return acc
-        }, {})
+          const method = (row.payment_method || 'Unknown').toUpperCase();
+          if (['CARD', 'UPI', 'CASH'].includes(method)) {
+            acc[method] = (acc[method] || 0) + 1;
+          }
+          return acc;
+        }, {});
         setPaymentMethodData({
           labels: Object.keys(paymentMethodMap),
           datasets: [{
@@ -287,42 +295,64 @@ export default function DashboardClient() {
 
       
 
-      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-3">
+      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
         <h2 className="text-lg font-semibold mb-4">Members Distribution</h2>
-        <div className="h-[250px]">
+        <div className="">
           {memberCategoryData.labels.length > 0 && (
             <Bar data={memberCategoryData} options={{
               responsive: true,
               plugins: {
                 legend: { display: false },
                 datalabels: {
-                  anchor: 'end',
-                  align: 'top',
-                  formatter: (value) => value,
-                  color: 'black',
+                  display: false,
                 },
               },
+              indexAxis: 'y',
               scales: {
                 y: { beginAtZero: true },
               },
+              maxBarThickness: 50,
             }} />
           )}
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-3">
+      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-1 xl:col-span-1">
+        <h2 className="text-lg font-semibold mb-4">Member Status</h2>
+        <div className="h-[250px] flex items-center justify-center">
+          <Pie data={{
+            labels: ['Active', 'Expiring Soon', 'Expired'],
+            datasets: [{
+              label: 'Member Status',
+              data: [activeMembers.length, expiringSoon.length, expiredMembers.length],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+              ],
+            }],
+          }} options={{
+            responsive: true,
+            plugins: {
+              legend: { position: 'right' },
+              datalabels: {
+                display: false,
+              }
+            }
+          }} />
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
         <h2 className="text-lg font-semibold mb-4">Sales by Service Category</h2>
-        <div className="h-[250px]">
+        <div className="">
           {salesByCategoryData.labels.length > 0 && (
             <Bar data={salesByCategoryData} options={{
               responsive: true,
               plugins: {
                 legend: { display: false },
                 datalabels: {
-                  anchor: 'end',
-                  align: 'top',
-                  formatter: (value) => value,
-                  color: 'black',
+                  display: false,
                 },
               },
               scales: {
@@ -333,29 +363,9 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
-        <h2 className="text-lg font-semibold mb-4">New Members Joined Over Time</h2>
-        <div className="h-[400px]">
-          {newMembersChartData.labels.length > 0 && (
-            <Bar data={newMembersChartData} options={{
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-                datalabels: {
-                  anchor: 'end',
-                  align: 'top',
-                  formatter: (value) => value,
-                  color: 'black',
-                },
-              },
-              scales: {
-                x: { beginAtZero: true, categoryPercentage: 0.8, barPercentage: 0.9 },
-                y: { beginAtZero: true },
-              },
-            }} />
-          )}
-        </div>
-      </div>
+
+
+
 
       <div className="bg-white shadow rounded-2xl p-6 col-span-1 xl:col-span-1">
         <h2 className="text-lg font-semibold mb-4">Payment Method Distribution</h2>
@@ -366,17 +376,7 @@ export default function DashboardClient() {
               plugins: {
                 legend: { position: 'right' },
                 datalabels: {
-                  formatter: (value, ctx) => {
-                    if (!ctx.chart.data.datasets[0]) return '';
-                    let sum = 0;
-                    let dataArr = ctx.chart.data.datasets[0].data;
-                    dataArr.forEach(data => {
-                        sum += data;
-                    });
-                    let percentage = (value*100 / sum).toFixed(2)+'%';
-                    return percentage;
-                },
-                  color: 'white',
+                  display: false,
                 }
               }
             }} />

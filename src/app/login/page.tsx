@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase/supabaseClient'
 
+import Image from 'next/image'
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -45,7 +47,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen px-4">
-      <h1 className="text-3xl font-bold mb-6">Tenzin&apos;s Gym</h1>
+      <Image src="/Image_28-07-25_at_6.25_PM-removebg-preview.png" alt="Tenzin's Gym Logo" width={150} height={75} />
       <div className="w-full max-w-sm bg-white p-6 rounded shadow">
         <input
           type="email"

@@ -29,7 +29,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         {/* 👇 Add toaster here so it works in all pages */}
         <Toaster position="top-right" />
         
-        <main className="flex-1 p-4 overflow-y-auto mt-16"> {/* Added mt-16 to offset for fixed topbar */}
+        <main className="flex-1 p-4 overflow-y-auto mt-24"> {/* Added mt-16 to offset for fixed topbar */}
           {children}
         </main>
       </div>
