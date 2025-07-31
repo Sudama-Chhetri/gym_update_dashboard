@@ -310,8 +310,8 @@ export default function DashboardClient() {
               indexAxis: 'y',
               scales: {
                 y: { beginAtZero: true },
+                x: { maxBarThickness: 50 },
               },
-              maxBarThickness: 50,
             }} />
           )}
         </div>
