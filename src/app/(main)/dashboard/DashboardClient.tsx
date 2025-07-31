@@ -121,7 +121,7 @@ export default function DashboardClient() {
             'rgba(255, 206, 86, 0.6)',
             'rgba(75, 192, 192, 0.6)',
             'rgba(153, 102, 255, 0.6)',
-          ] }],
+          ], ...(isMobile && { barThickness: 20 }) }],
         })
 
         // Top Trainer
@@ -150,6 +150,7 @@ export default function DashboardClient() {
               'rgba(75, 192, 192, 0.6)',
               'rgba(153, 102, 255, 0.6)',
             ],
+            ...(isMobile && { barThickness: 20 })
           }],
         })
 
@@ -322,7 +323,7 @@ export default function DashboardClient() {
               },
               indexAxis: 'y',
               scales: {
-                y: { beginAtZero: true, ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                y: { beginAtZero: true },
                 x: { type: 'category', ...(isMobile && { display: false, grid: { display: false }, ticks: { display: false } }) },
               },
             }} />
@@ -384,7 +385,7 @@ export default function DashboardClient() {
                 },
               },
               scales: {
-                y: { beginAtZero: true, ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                y: { beginAtZero: true },
                 x: { type: 'category' },
               },
             }} />
