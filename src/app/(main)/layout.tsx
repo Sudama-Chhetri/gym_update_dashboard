@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Sidebar from '@/components/navigation/sidebar'
 import Topbar from '@/components/navigation/topbar'
-import { createSupabaseBrowserClient } from '@/lib/supabase/supabaseClient'
+
 import { useRouter } from 'next/navigation'
 import { Toaster } from 'react-hot-toast'
 import { supabase } from '@/lib/supabase/supabaseClient'
