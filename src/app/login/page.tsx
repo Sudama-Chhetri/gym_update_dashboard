@@ -46,28 +46,28 @@ export default function LoginPage() {
 }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen px-4">
-      <Image src="/Image_28-07-25_at_6.25_PM-removebg-preview.png" alt="Tenzin's Gym Logo" width={150} height={75} />
-      <div className="w-full max-w-sm bg-white p-6 rounded shadow">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 p-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Login</h2>
         <input
           type="email"
           placeholder="Email"
-          className="w-full p-2 border mb-4"
+          className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
           type="password"
           placeholder="Password"
-          className="w-full p-2 border mb-4"
+          className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6"
           onChange={(e) => setPassword(e.target.value)}
         />
         <button
           onClick={handleLogin}
-          className="w-full bg-black text-white p-2"
+          className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors duration-200"
         >
           Login
         </button>
-        {error && <p className="text-sm text-red-500 text-center mt-2">{error}</p>}
+        {error && <p className="text-sm text-red-500 text-center mt-4">{error}</p>}
       </div>
     </div>
   )
