@@ -307,12 +307,13 @@ export default function DashboardClient() {
 
       
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[300px] md:h-auto">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[450px] md:h-auto">
         <h2 className="text-xl font-bold mb-4">Members Distribution</h2>
         <div className="">
           {memberCategoryData.labels.length > 0 && (
             <Bar data={memberCategoryData} options={{
               responsive: true,
+              maintainAspectRatio: !isMobile,
               plugins: {
                 legend: { display: false },
                 datalabels: {
@@ -321,17 +322,17 @@ export default function DashboardClient() {
               },
               indexAxis: 'y',
               scales: {
-                y: { beginAtZero: true, ...(isMobile && { barPercentage: 0.9, categoryPercentage: 0.8 }) },
-                x: { },
+                y: { beginAtZero: true },
+                x: { ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
               },
             }} />
           )}
         </div>
       </div>
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-1 xl:col-span-1 mb-6">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-1 xl:col-span-1 mb-6 h-[450px] md:h-auto">
         <h2 className="text-xl font-bold mb-4">Member Status</h2>
-        <div className="flex items-center justify-center h-72">
+        <div className="flex items-center justify-center h-full">
           <Pie data={{
             labels: ['Active', 'Expiring Soon', 'Expired'],
             datasets: [{
@@ -345,22 +346,25 @@ export default function DashboardClient() {
             }],
           }} options={{
             responsive: true,
+            maintainAspectRatio: !isMobile,
             plugins: {
               legend: { display: true, position: 'bottom' },
               datalabels: {
                 display: false,
               }
-            }
+            },
+            cutout: isMobile ? '50%' : '0%', // Adjust cutout for mobile to make pie chart larger
           }} />
         </div>
       </div>
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[300px] md:h-auto">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[450px] md:h-auto">
         <h2 className="text-xl font-bold mb-4">Sales by Service Category</h2>
         <div className="">
           {salesByCategoryData.labels.length > 0 && (
             <Bar data={salesByCategoryData} options={{
               responsive: true,
+              maintainAspectRatio: !isMobile,
               plugins: {
                 legend: { display: false },
                 datalabels: {
@@ -368,7 +372,8 @@ export default function DashboardClient() {
                 },
               },
               scales: {
-                y: { beginAtZero: true, ...(isMobile && { barPercentage: 0.9, categoryPercentage: 0.8 }) },
+                y: { beginAtZero: true },
+                x: { ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
               },
             }} />
           )}
@@ -381,7 +386,7 @@ export default function DashboardClient() {
 
       <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 xl:col-span-1 mb-6">
         <h2 className="text-xl font-bold mb-4">Payment Method Distribution</h2>
-        <div className="flex items-center justify-center h-72">
+        <div className="flex items-center justify-center h-[302px]">
           {paymentMethodData.labels.length > 0 && (
             <Pie data={paymentMethodData} options={{
               responsive: true,
