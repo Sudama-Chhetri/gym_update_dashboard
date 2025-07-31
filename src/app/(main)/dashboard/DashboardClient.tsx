@@ -241,9 +241,9 @@ export default function DashboardClient() {
 
     return (
     <div className="p-6 grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-      <div className="bg-gradient-to-br from-blue-50 to-white shadow-sm rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
+      <div className="bg-gradient-to-br from-blue-50 to-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Total Sales Summary ({filter})</h2>
+          <h2 className="text-xl font-bold">Total Sales Summary ({filter})</h2>
           <div className="space-x-2">
             {['Day', 'Month', 'Year'].map((f) => (
               <button
@@ -271,8 +271,8 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6">
-        <h2 className="text-lg font-semibold mb-4">Member Stats</h2>
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6">
+        <h2 className="text-xl font-bold mb-4">Member Stats</h2>
         <ul className="space-y-2">
           <li>👥 Total Members: {members.length}</li>
           <li>🆕 New This Month: {newThisMonth}</li>
@@ -295,8 +295,8 @@ export default function DashboardClient() {
 
       
 
-      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
-        <h2 className="text-lg font-semibold mb-4">Members Distribution</h2>
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
+        <h2 className="text-xl font-bold mb-4">Members Distribution</h2>
         <div className="">
           {memberCategoryData.labels.length > 0 && (
             <Bar data={memberCategoryData} options={{
@@ -317,8 +317,8 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-1 xl:col-span-1">
-        <h2 className="text-lg font-semibold mb-4">Member Status</h2>
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-1 xl:col-span-1">
+        <h2 className="text-xl font-bold mb-4">Member Status</h2>
         <div className="flex items-center justify-center">
           <Pie data={{
             labels: ['Active', 'Expiring Soon', 'Expired'],
@@ -343,7 +343,7 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
         <h2 className="text-lg font-semibold mb-4">Sales by Service Category</h2>
         <div className="">
           {salesByCategoryData.labels.length > 0 && (
@@ -367,8 +367,8 @@ export default function DashboardClient() {
 
 
 
-      <div className="bg-white shadow rounded-2xl p-6 col-span-1 xl:col-span-1">
-        <h2 className="text-lg font-semibold mb-4">Payment Method Distribution</h2>
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 xl:col-span-1">
+        <h2 className="text-xl font-bold mb-4">Payment Method Distribution</h2>
         <div className="flex items-center justify-center">
           {paymentMethodData.labels.length > 0 && (
             <Pie data={paymentMethodData} options={{
