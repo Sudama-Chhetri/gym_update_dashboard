@@ -307,7 +307,7 @@ export default function DashboardClient() {
 
       
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 min-h-[400px] md:h-auto">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[300px] md:h-auto">
         <h2 className="text-xl font-bold mb-4">Members Distribution</h2>
         <div className="">
           {memberCategoryData.labels.length > 0 && (
@@ -321,7 +321,7 @@ export default function DashboardClient() {
               },
               indexAxis: 'y',
               scales: {
-                y: { beginAtZero: true, ...(isMobile && { barThickness: 30 }) },
+                y: { beginAtZero: true, ...(isMobile && { barPercentage: 0.9, categoryPercentage: 0.8 }) },
                 x: { },
               },
             }} />
@@ -355,7 +355,7 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 min-h-[400px] md:h-auto">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[300px] md:h-auto">
         <h2 className="text-xl font-bold mb-4">Sales by Service Category</h2>
         <div className="">
           {salesByCategoryData.labels.length > 0 && (
@@ -368,7 +368,7 @@ export default function DashboardClient() {
                 },
               },
               scales: {
-                y: { beginAtZero: true, ...(isMobile && { barThickness: 30 }) },
+                y: { beginAtZero: true, ...(isMobile && { barPercentage: 0.9, categoryPercentage: 0.8 }) },
               },
             }} />
           )}
