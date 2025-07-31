@@ -256,7 +256,7 @@ export default function DashboardClient() {
             ))}
           </div>
         </div>
-        <div className="flex gap-10 text-center">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-10 text-center">
           <div>
             <p className="text-2xl font-bold">💳 {totalTransactions}</p>
             <p className="text-muted-foreground">Transactions</p>
