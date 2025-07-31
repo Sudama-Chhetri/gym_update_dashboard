@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { ProductInvoiceData } from "@/types"
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer"
+import NextImage from "next/image"
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image as PDFImage } from "@react-pdf/renderer"
 
 const styles = StyleSheet.create({
   page: {
@@ -64,9 +65,9 @@ function ProductInvoicePDF({ invoiceData }: { invoiceData: ProductInvoiceData })
       <Page size="A4" orientation="portrait" style={styles.page}>
         <View style={styles.header}>
           {/* eslint-disable jsx-a11y/alt-text */}
-          <Image src={logoBase64} style={styles.logo} />
+          <PDFImage src={logoBase64} style={styles.logo} />
           <View style={styles.gymInfo}>
-            <Image src="/Image_28-07-25_at_6.25_PM-removebg-preview.png" style={{ width: 80, height: 40, alignSelf: 'center' }} />
+            <PDFImage src="/logo.png" style={{ width: 80, height: 40, alignSelf: 'center' }} />
             <Text>Beachwood, Ladenla Road</Text>
             <Text>Darjeeling 734101</Text>
           </View>
@@ -125,7 +126,7 @@ export default function ProductInvoiceDrawer({ open, onClose, invoiceData }: { o
 
         <div className="bg-white p-4 text-sm text-black">
           <div className="flex justify-center mb-4">
-            <Image src="/Image_28-07-25_at_6.25_PM-removebg-preview.png" alt="Tenzin's Gym Logo" width={80} height={40} />
+            <NextImage src="/logo.png" alt="Tenzin's Gym Logo" width={80} height={40} />
           </div>
           <p className="text-center text-muted-foreground mb-4">{formatISTDate(date)}</p>
           <p><strong>Invoice ID:</strong> {invoice_id}</p>
