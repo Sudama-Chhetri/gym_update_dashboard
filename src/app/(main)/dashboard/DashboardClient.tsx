@@ -266,7 +266,7 @@ export default function DashboardClient() {
             <p className="text-muted-foreground">Revenue</p>
           </div>
         </div>
-        <div className="mt-6 h-[400px]">
+        <div className="mt-6">
           <Line data={revenueChartData} options={chartOptions} />
         </div>
       </div>
@@ -319,7 +319,7 @@ export default function DashboardClient() {
 
       <div className="bg-white shadow rounded-2xl p-6 col-span-1 md:col-span-1 xl:col-span-1">
         <h2 className="text-lg font-semibold mb-4">Member Status</h2>
-        <div className="h-[250px] flex items-center justify-center">
+        <div className="flex items-center justify-center">
           <Pie data={{
             labels: ['Active', 'Expiring Soon', 'Expired'],
             datasets: [{
@@ -369,7 +369,7 @@ export default function DashboardClient() {
 
       <div className="bg-white shadow rounded-2xl p-6 col-span-1 xl:col-span-1">
         <h2 className="text-lg font-semibold mb-4">Payment Method Distribution</h2>
-        <div className="h-[250px] flex items-center justify-center">
+        <div className="flex items-center justify-center">
           {paymentMethodData.labels.length > 0 && (
             <Pie data={paymentMethodData} options={{
               responsive: true,
