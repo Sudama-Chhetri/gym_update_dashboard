@@ -322,8 +322,8 @@ export default function DashboardClient() {
               },
               indexAxis: 'y',
               scales: {
-                y: { beginAtZero: true },
-                x: { type: 'category', ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                y: { beginAtZero: true, ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                x: { type: 'category', ...(isMobile && { display: false, ticks: { display: false } }) },
               },
             }} />
           )}
@@ -348,7 +348,19 @@ export default function DashboardClient() {
             responsive: true,
             maintainAspectRatio: !isMobile,
             plugins: {
-              legend: { display: true, position: 'bottom' },
+              legend: {
+                display: true,
+                position: 'bottom',
+                ...(isMobile && {
+                  align: 'start', // Align items to the start (left)
+                  labels: {
+                    padding: 10, // Adjust padding between items
+                    font: {
+                      size: 10 // Smaller font size for mobile
+                    }
+                  }
+                })
+              },
               datalabels: {
                 display: false,
               }
@@ -372,8 +384,8 @@ export default function DashboardClient() {
                 },
               },
               scales: {
-                y: { beginAtZero: true },
-                x: { type: 'category', ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                y: { beginAtZero: true, ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                x: { type: 'category' },
               },
             }} />
           )}
