@@ -6,11 +6,11 @@ import Topbar from '@/components/navigation/topbar'
 import { createSupabaseBrowserClient } from '@/lib/supabase/supabaseClient'
 import { useRouter } from 'next/navigation'
 import { Toaster } from 'react-hot-toast'
+import { supabase } from '@/lib/supabase/supabaseClient'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const router = useRouter()
-  const supabase = createSupabaseBrowserClient()
 
   useEffect(() => {
     const checkUser = async () => {
@@ -20,7 +20,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       }
     }
     checkUser()
-  }, [router, supabase])
+  }, [router])
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
