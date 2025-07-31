@@ -295,7 +295,7 @@ export default function DashboardClient() {
 
       
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2">
         <h2 className="text-xl font-bold mb-4">Members Distribution</h2>
         <div className="">
           {memberCategoryData.labels.length > 0 && (
@@ -343,7 +343,7 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2">
         <h2 className="text-lg font-semibold mb-4">Sales by Service Category</h2>
         <div className="">
           {salesByCategoryData.labels.length > 0 && (
