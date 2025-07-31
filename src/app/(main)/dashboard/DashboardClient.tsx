@@ -51,6 +51,7 @@ export default function DashboardClient() {
   const [salesByCategoryData, setSalesByCategoryData] = useState<ChartData>({ labels: [], datasets: [] })
   const [paymentMethodData, setPaymentMethodData] = useState<ChartData>({ labels: [], datasets: [] })
   const [newMembersChartData, setNewMembersChartData] = useState<ChartData>({ labels: [], datasets: [] })
+  const [isMobile, setIsMobile] = useState(false);
 
   interface Member {
     membership_status: string;
@@ -215,6 +216,17 @@ export default function DashboardClient() {
     }
   }, [members]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // Tailwind's md breakpoint is 768px
+    };
+
+    handleResize(); // Set initial value
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const activeMembers = members.filter(m => m.membership_status === 'active')
   const expiringSoon = members.filter(m => m.membership_status === 'expiring soon')
   const expiredMembers = members.filter(m => m.membership_status === 'expired')
@@ -309,7 +321,7 @@ export default function DashboardClient() {
               },
               indexAxis: 'y',
               scales: {
-                y: { beginAtZero: true, barPercentage: 0.8, categoryPercentage: 0.7 },
+                y: { beginAtZero: true, ...(isMobile && { barPercentage: 0.8, categoryPercentage: 0.7 }) },
                 x: { },
               },
             }} />
@@ -356,7 +368,7 @@ export default function DashboardClient() {
                 },
               },
               scales: {
-                y: { beginAtZero: true, barPercentage: 0.8, categoryPercentage: 0.7 },
+                y: { beginAtZero: true, ...(isMobile && { barPercentage: 0.8, categoryPercentage: 0.7 }) },
               },
             }} />
           )}
