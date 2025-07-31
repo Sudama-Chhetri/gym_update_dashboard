@@ -46,8 +46,8 @@ export default function LoginPage() {
 }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 p-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl">
+    <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-br from-gray-900 to-gray-700 p-4">
+      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl bg-white p-8 rounded-lg shadow-xl">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Login</h2>
         <input
           type="email"
