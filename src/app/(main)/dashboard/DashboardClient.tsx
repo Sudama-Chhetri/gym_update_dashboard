@@ -323,7 +323,7 @@ export default function DashboardClient() {
               indexAxis: 'y',
               scales: {
                 y: { beginAtZero: true },
-                x: { ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                x: { type: 'category', ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
               },
             }} />
           )}
@@ -373,7 +373,7 @@ export default function DashboardClient() {
               },
               scales: {
                 y: { beginAtZero: true },
-                x: { ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
+                x: { type: 'category', ...(isMobile && { barPercentage: 1.0, categoryPercentage: 0.9 }) },
               },
             }} />
           )}
