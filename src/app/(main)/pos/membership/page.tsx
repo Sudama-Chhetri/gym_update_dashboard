@@ -1,6 +1,4 @@
-'use client'
-
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase/supabaseClient"
 import toast from "react-hot-toast"
@@ -43,7 +41,7 @@ interface InvoiceData {
   isRenewal: boolean;
 }
 
-export default function MembershipPOS() {
+function MembershipPOSContent() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
@@ -290,5 +288,13 @@ export default function MembershipPOS() {
         invoiceData={invoiceData}
       />
     </div>
+  )
+}
+
+export default function MembershipPOS() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MembershipPOSContent />
+    </Suspense>
   )
 }
