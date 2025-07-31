@@ -256,12 +256,12 @@ export default function DashboardClient() {
             ))}
           </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-4 md:gap-10 text-center">
-          <div>
+        <div className="flex flex-col md:flex-row gap-4 md:gap-10">
+          <div className="text-center">
             <p className="text-2xl font-bold">💳 {totalTransactions}</p>
             <p className="text-muted-foreground">Transactions</p>
           </div>
-          <div>
+          <div className="text-center">
             <p className="text-2xl font-bold">₹{totalRevenue}</p>
             <p className="text-muted-foreground">Revenue</p>
           </div>
@@ -344,7 +344,7 @@ export default function DashboardClient() {
       </div>
 
       <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[300px] md:h-auto">
-        <h2 className="text-lg font-semibold mb-4">Sales by Service Category</h2>
+        <h2 className="text-xl font-bold mb-4">Sales by Service Category</h2>
         <div className="">
           {salesByCategoryData.labels.length > 0 && (
             <Bar data={salesByCategoryData} options={{
