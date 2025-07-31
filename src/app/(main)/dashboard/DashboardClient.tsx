@@ -121,7 +121,7 @@ export default function DashboardClient() {
             'rgba(255, 206, 86, 0.6)',
             'rgba(75, 192, 192, 0.6)',
             'rgba(153, 102, 255, 0.6)',
-          ], ...(isMobile && { barThickness: 20 }) }],
+          ] }],
         })
 
         // Top Trainer
@@ -150,7 +150,6 @@ export default function DashboardClient() {
               'rgba(75, 192, 192, 0.6)',
               'rgba(153, 102, 255, 0.6)',
             ],
-            ...(isMobile && { barThickness: 20 })
           }],
         })
 
@@ -308,7 +307,7 @@ export default function DashboardClient() {
 
       
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[450px] md:h-auto">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2" style={{ height: isMobile ? `${Math.max(300, memberCategoryData.labels.length * 30 + 100)}px` : 'auto' }}>
         <h2 className="text-xl font-bold mb-4">Members Distribution</h2>
         <div className="">
           {memberCategoryData.labels.length > 0 && (
@@ -323,7 +322,7 @@ export default function DashboardClient() {
               },
               indexAxis: 'y',
               scales: {
-                y: { beginAtZero: true },
+                y: { beginAtZero: true, ...(isMobile && { barPercentage: 0.9, categoryPercentage: 0.8 }) },
                 x: { type: 'category', ...(isMobile && { display: false, grid: { display: false }, ticks: { display: false } }) },
               },
             }} />
@@ -371,7 +370,7 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2 h-[450px] md:h-auto">
+      <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-full md:col-span-2 xl:col-span-2" style={{ height: isMobile ? `${Math.max(300, salesByCategoryData.labels.length * 30 + 100)}px` : 'auto' }}>
         <h2 className="text-xl font-bold mb-4">Sales by Service Category</h2>
         <div className="">
           {salesByCategoryData.labels.length > 0 && (
