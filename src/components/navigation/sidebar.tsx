@@ -23,10 +23,10 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: { isSidebarOpe
   ]
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen transition-all overflow-y-auto h-screen">
+    <div className={`bg-gray-900 text-white min-h-screen transition-all overflow-y-auto h-screen ${isSidebarOpen ? 'block' : 'hidden'} md:block`}>
       <div className="p-4 flex justify-between items-center">
         <h1 className="text-xl font-bold">Menu</h1>
-        <button onClick={toggleSidebar} className="text-white focus:outline-none sm:hidden">
+        <button onClick={toggleSidebar} className="text-white focus:outline-none md:hidden">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>

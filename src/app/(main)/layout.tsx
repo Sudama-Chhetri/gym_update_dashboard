@@ -1,35 +1,56 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Sidebar from '@/components/navigation/sidebar'
 import Topbar from '@/components/navigation/topbar'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { createSupabaseBrowserClient } from '@/lib/supabase/supabaseClient'
+import { useRouter } from 'next/navigation'
 import { Toaster } from 'react-hot-toast'
 
-export default async function MainLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function MainLayout({ children }: { children: React.ReactNode }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const router = useRouter()
+  const supabase = createSupabaseBrowserClient()
 
-  if (!user) {
-    redirect('/login')
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+      }
+    }
+    checkUser()
+  }, [router, supabase])
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen)
   }
 
   return (
-    <div className="flex min-h-screen"> {/* Changed to flex for main layout */}
-      {/* Fixed Sidebar */}
-      <div className="fixed top-0 left-0 h-screen w-64 z-50 bg-white shadow-md hidden sm:block"> {/* Added fixed, h-screen, z-50, bg-white, shadow-md, hidden sm:block */}
-        <Sidebar />
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <div className={`fixed top-0 left-0 h-screen w-64 z-50 bg-white shadow-md transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out md:block`}>
+        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       </div>
 
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"
+          onClick={toggleSidebar}
+        ></div>
+      )}
+
       {/* Main content area */}
-      <div className="flex flex-col flex-1 sm:ml-64"> {/* Added sm:ml-64 to offset for fixed sidebar */}
-        {/* Fixed Topbar */}
-        <div className="fixed top-0 left-0 sm:left-64 w-full sm:w-[calc(100%-16rem)] z-40 bg-white shadow-sm"> {/* Added fixed, top-0, left-0, sm:left-64, w-full, sm:w-[calc(100%-16rem)], z-40, bg-white, shadow-sm */}
-          <Topbar />
+      <div className="flex flex-col flex-1 md:ml-64">
+        {/* Topbar */}
+        <div className="fixed top-0 left-0 w-full md:left-64 md:w-[calc(100%-16rem)] z-40 bg-white shadow-sm">
+          <Topbar toggleSidebar={toggleSidebar} />
         </div>
         
-        {/* 👇 Add toaster here so it works in all pages */}
         <Toaster position="top-right" />
         
-        <main className="flex-1 p-4 overflow-y-auto mt-24"> {/* Added mt-16 to offset for fixed topbar */}
+        <main className="flex-1 p-4 overflow-y-auto mt-24">
           {children}
         </main>
       </div>
