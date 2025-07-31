@@ -50,7 +50,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         
         <Toaster position="top-right" />
         
-        <main className="flex-1 p-4 overflow-y-auto mt-24">
+        <main className="flex-1 p-4 overflow-y-auto mt-16 md:mt-20">
           {children}
         </main>
       </div>

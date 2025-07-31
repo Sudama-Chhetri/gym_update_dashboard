@@ -244,7 +244,7 @@ export default function DashboardClient() {
       <div className="bg-gradient-to-br from-blue-50 to-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Total Sales Summary ({filter})</h2>
-          <div className="space-x-2">
+          <div className="flex space-x-2">
             {['Day', 'Month', 'Year'].map((f) => (
               <button
                 key={f}
