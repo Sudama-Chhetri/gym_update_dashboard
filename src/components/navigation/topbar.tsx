@@ -4,7 +4,9 @@ import { supabase } from '@/lib/supabase/supabaseClient'
 
 import Image from 'next/image'
 
-export default function Topbar() {
+import { Menu } from 'lucide-react'
+
+export default function Topbar({ toggleSidebar }: { toggleSidebar: () => void }) {
   const router = useRouter()
 
   const handleLogout = async () => {
@@ -17,16 +19,21 @@ export default function Topbar() {
   }
 
   return (
-    <div className="w-full flex items-center justify-between px-6 py-4 bg-gray-800 shadow">
-      <div className="flex items-center gap-4">
-        <Image src="/Image_28-07-25_at_6.25_PM-removebg-preview.png" alt="Tenzin's Gym Logo" width={80} height={40} />
-                <p className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 text-xl font-bold">ULTIMATE FITNESS FOR EVERYONE</p>
+    <div className="w-full flex items-center justify-between px-2 py-2 sm:px-4 sm:py-3 bg-gray-800 shadow">
+      <div className="flex items-center gap-2">
+        <button onClick={toggleSidebar} className="text-white focus:outline-none p-2 sm:hidden">
+          <Menu size={24} />
+        </button>
+        <div className="flex-shrink-0">
+          <Image src="/logo.png" alt="Tenzin's Gym Logo" width={100} height={40} className="h-10 w-auto object-contain" />
+        </div>
+        <p className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 text-xl sm:text-2xl font-bold hidden sm:block">ULTIMATE FITNESS FOR EVERYONE</p>
       </div>
-      <div className="flex gap-4">
-        <button onClick={goToPOS} className="bg-blue-600 text-white px-3 py-1 rounded">
+      <div className="flex gap-2">
+        <button onClick={goToPOS} className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-semibold">
           POS
         </button>
-        <button onClick={handleLogout} className="bg-red-500 text-white px-3 py-1 rounded">
+        <button onClick={handleLogout} className="bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-semibold">
           Logout
         </button>
       </div>
