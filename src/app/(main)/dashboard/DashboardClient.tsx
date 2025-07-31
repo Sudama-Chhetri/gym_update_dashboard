@@ -242,9 +242,9 @@ export default function DashboardClient() {
     return (
     <div className="p-6 grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
       <div className="bg-gradient-to-br from-blue-50 to-white shadow-lg border border-gray-100 rounded-2xl p-6 col-span-1 md:col-span-2 xl:col-span-2">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Total Sales Summary ({filter})</h2>
-          <div className="flex space-x-2">
+        <div className="mb-4">
+          <h2 className="text-xl font-bold mb-2 md:mb-0">Total Sales Summary ({filter})</h2>
+          <div className="flex space-x-2 justify-start md:justify-end">
             {['Day', 'Month', 'Year'].map((f) => (
               <button
                 key={f}
@@ -309,7 +309,7 @@ export default function DashboardClient() {
               },
               indexAxis: 'y',
               scales: {
-                y: { beginAtZero: true },
+                y: { beginAtZero: true, barPercentage: 0.8, categoryPercentage: 0.7 },
                 x: { },
               },
             }} />
@@ -356,7 +356,7 @@ export default function DashboardClient() {
                 },
               },
               scales: {
-                y: { beginAtZero: true },
+                y: { beginAtZero: true, barPercentage: 0.8, categoryPercentage: 0.7 },
               },
             }} />
           )}
